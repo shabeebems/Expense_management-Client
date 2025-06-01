@@ -12,7 +12,7 @@ const Navbar = ({ page }) => {
   const logout = async(e) => {
     e.preventDefault()
     const response = await axios.post(
-      `http://localhost:5000/api/auth/logout`, {},
+      `${import.meta.env.VITE_SERVER_API_URL}/api/auth/logout`, {},
       { withCredentials: true }
     );
     navigate('/user/login')

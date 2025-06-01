@@ -13,13 +13,13 @@ const UserOrders = () => {
   const navigate = useNavigate()
 
   const fetchOrders = async() => {
-    const response = await axios.get('http://localhost:5000/api/user/fetch_orders',
+    const response = await axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/user/fetch_orders`,
     { withCredentials: true });
     setOrders(response.data);
   }
 
   const createOrder = async() => {
-    const response = await axios.post('http://localhost:5000/api/user/create_order', {
+    const response = await axios.post(`${import.meta.env.VITE_SERVER_API_URL}/api/user/create_order`, {
       name, place
     }, { withCredentials: true });
     setOrders([...orders, response.data]);

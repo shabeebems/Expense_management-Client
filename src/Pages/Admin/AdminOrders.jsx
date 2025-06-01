@@ -8,14 +8,14 @@ const AdminOrders = () => {
   const navigate = useNavigate()
 
   const fetchOrders = async() => {
-    const response = await axios.get('http://localhost:5000/api/admin/fetch_orders',
+    const response = await axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/admin/fetch_orders`,
     { withCredentials: true });
     setOrders(response.data);
   }
 
   const changeStatus = async(e, orderId) => {
     e.preventDefault()
-    await axios.patch(`http://localhost:5000/api/admin/update_order/${orderId}`,
+    await axios.patch(`${import.meta.env.VITE_SERVER_API_URL}/api/admin/update_order/${orderId}`,
     { withCredentials: true });
     fetchOrders()
   }
@@ -34,7 +34,7 @@ const AdminOrders = () => {
           {orders.map((order, index) => (
             <div
               key={index}
-              onClick={() => navigate(`/admin/single_order/${order._id}`)}
+              // onClick={() => navigate(`/admin/single_order/${order._id}`)}
               className="cursor-pointer group border border-gray-200 rounded-2xl p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 bg-white"
             >
               <div className="flex justify-between items-center mb-2">

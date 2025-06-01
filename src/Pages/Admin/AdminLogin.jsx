@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import LoginComponent from '../../Components/LoginComponent';
 
 const AdminLogin = () => {

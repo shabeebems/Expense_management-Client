@@ -18,7 +18,7 @@ const SingleOrder = () => {
   const fetchSingleOrder = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/user/fetch_single_order/${id}`,
+        `${import.meta.env.VITE_SERVER_API_URL}/api/user/fetch_single_order/${id}`,
         { withCredentials: true }
       );
       setOrder(response.data);
@@ -30,7 +30,7 @@ const SingleOrder = () => {
   const fetchIncomeAndExpense = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/user/fetch_income_and_expense/${id}`,
+        `${import.meta.env.VITE_SERVER_API_URL}/api/user/fetch_income_and_expense/${id}`,
         { withCredentials: true }
       );
       setExpense(response.data.expenses)
@@ -58,7 +58,7 @@ const SingleOrder = () => {
 
     try {
       await axios.post(
-        `http://localhost:5000/api/user/add_expense/${id}`,
+        `${import.meta.env.VITE_SERVER_API_URL}/api/user/add_expense/${id}`,
         expenseData,
         { withCredentials: true }
       );
