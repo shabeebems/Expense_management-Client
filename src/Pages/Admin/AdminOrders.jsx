@@ -34,8 +34,7 @@ const AdminOrders = () => {
           {orders.map((order, index) => (
             <div
               key={index}
-              // onClick={() => navigate(`/admin/single_order/${order._id}`)}
-              className="cursor-pointer group border border-gray-200 rounded-2xl p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 bg-white"
+              className="group border border-gray-200 rounded-2xl p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 bg-white"
             >
               <div className="flex justify-between items-center mb-2">
                 <h4 className="text-xl font-semibold text-gray-800 group-hover:text-indigo-600 transition">
@@ -56,16 +55,24 @@ const AdminOrders = () => {
 
               <p className="text-gray-500 mb-4">{order.place}</p>
 
-              {order.status === 'Pending' && (
-                <button
-                  onClick={(e) => changeStatus(e, order._id)}
-                  className="cursor-pointer mt-2 px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                >
-                  Activate
-                </button>
-              )}
-            </div>
+              <div className="flex gap-3">
+                {order.status === 'Pending' && (
+                  <button
+                    onClick={(e) => changeStatus(e, order._id)}
+                    className="cursor-pointer mt-2 px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                  >
+                    Activate
+                  </button>
+                )}
 
+                <button
+                  onClick={() => navigate(`/admin/single_order/${order._id}`)}
+                  className="cursor-pointer mt-2 px-4 py-2 text-sm font-medium bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
           ))}
           {orders.length === 0 && (
             <p className="text-gray-500">No orders yet.</p>

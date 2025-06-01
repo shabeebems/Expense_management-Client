@@ -12,7 +12,7 @@ const LoginComponent = ({ role }) => {
         email, password, role
     }, { withCredentials: true });
     if(response.data.success) {
-      navigate(`/${role.toLowerCase()}/home`);
+      navigate(`/${role.toLowerCase()}`);
     } else {
       alert(response.data.message)
     }
