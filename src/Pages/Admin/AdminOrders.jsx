@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import AdminNavbar from '../../Components/AdminNavbar'
+import AdminNavbar from '../../Components/AdminNavbar.jsx'
 import axios from 'axios';
 import { useNavigate } from 'react-router';
 

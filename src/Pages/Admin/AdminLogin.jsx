@@ -1,4 +1,4 @@
-import LoginComponent from '../../Components/LoginComponent';
+import LoginComponent from '../../Components/LoginComponent.jsx';
 
 const AdminLogin = () => {
 

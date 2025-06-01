@@ -1,5 +1,5 @@
 import React from 'react'
-import Navbar from '../../Components/UserNavbar'
+import Navbar from '../../Components/UserNavbar.jsx'
 
 const UserHome = () => {
   return (

@@ -1,5 +1,5 @@
 import { useParams } from "react-router";
-import AdminNavbar from "../../Components/AdminNavbar";
+import AdminNavbar from "../../Components/AdminNavbar.jsx";
 
 const AdminSingleOrder = () => {
     const { id } = useParams();

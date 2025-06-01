@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import Navbar from '../../Components/UserNavbar';
+import Navbar from '../../Components/UserNavbar.jsx';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
