@@ -1,13 +1,13 @@
 import { Routes, Route } from 'react-router-dom';
 import './App.css'
-import AdminLogin from './Pages/Admin/AdminLogin';
-import UserLogin from './Pages/User/UserLogin';
-import AdminHome from './Pages/Admin/AdminHome';
-import UserHome from './Pages/User/userHome';
-import UserOrders from './Pages/User/UserOrders';
-import SingleOrder from './Pages/User/SingleOrder';
-import AdminOrders from './Pages/Admin/AdminOrders';
-import AdminSingleOrder from './Pages/Admin/AdminSingleOrder';
+import AdminLogin from './Pages/Admin/AdminLogin.jsx';
+import UserLogin from './Pages/User/UserLogin.jsx';
+import AdminHome from './Pages/Admin/AdminHome.jsx';
+import UserHome from './Pages/User/userHome.jsx';
+import UserOrders from './Pages/User/UserOrders.jsx';
+import SingleOrder from './Pages/User/SingleOrder.jsx';
+import AdminOrders from './Pages/Admin/AdminOrders.jsx';
+import AdminSingleOrder from './Pages/Admin/AdminSingleOrder.jsx';
 
 function App() {
   return (
