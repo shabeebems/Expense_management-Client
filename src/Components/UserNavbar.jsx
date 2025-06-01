@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = ({ page }) => {
   const navItems = [
-    { label: "Home", path: "/user/home" },
+    { label: "Home", path: "/user" },
     { label: "Orders", path: "/user/orders" },
   ];
 
@@ -15,7 +15,7 @@ const Navbar = ({ page }) => {
       `${import.meta.env.VITE_SERVER_API_URL}/api/auth/logout`, {},
       { withCredentials: true }
     );
-    navigate('/user/login')
+    navigate('/')
   }
 
   return (
