@@ -3,7 +3,7 @@ import './App.css'
 import AdminLogin from './Pages/Admin/AdminLogin.jsx';
 import UserLogin from './Pages/User/UserLogin.jsx';
 import AdminHome from './Pages/Admin/AdminHome.jsx';
-import UserHome from './Pages/User/userHome.jsx';
+import UserHome from './Pages/User/UserHomes.jsx';
 import UserOrders from './Pages/User/UserOrders.jsx';
 import SingleOrder from './Pages/User/SingleOrder.jsx';
 import AdminOrders from './Pages/Admin/AdminOrders.jsx';
