@@ -14,8 +14,8 @@ const UserOrders = () => {
     try {
       console.log('Fetching')
       const response = await axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/user/fetch_orders`, {
-        withCredentials: true
-      });
+  withCredentials: true
+});;
       setOrders(response.data);
     } catch (err) {
       console.error('Error fetching orders:', err);
