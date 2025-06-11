@@ -170,7 +170,18 @@ const SingleOrder = () => {
                     key={index}
                     className="flex justify-between items-center bg-green-50 p-3 rounded border border-green-200"
                   >
-                    <span className="font-medium text-green-800">{item.activity}</span>
+                    <div>
+                      <span className="font-medium text-green-800 block">{item.activity}</span>
+                      {item.createdAt && (
+                        <span className="text-sm text-green-600">
+                          {new Date(item.createdAt).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-green-600 font-bold">${item.amount}</span>
                   </li>
                 ))}
@@ -190,7 +201,18 @@ const SingleOrder = () => {
                     key={index}
                     className="flex justify-between items-center bg-red-50 p-3 rounded border border-red-200"
                   >
-                    <span className="font-medium text-red-800">{item.activity}</span>
+                    <div>
+                      <span className="font-medium text-red-800 block">{item.activity}</span>
+                      {item.createdAt && (
+                        <span className="text-sm text-red-600">
+                          {new Date(item.createdAt).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-red-600 font-bold">${item.amount}</span>
                   </li>
                 ))}

@@ -9,13 +9,14 @@ const UserOrders = () => {
   const [place, setPlace] = useState('');
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
+  const [statusFilter, setStatusFilter] = useState('All');
 
   const fetchOrders = async () => {
     try {
       console.log('Fetching')
-      const response = await axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/user/fetch_orders`, {
-  withCredentials: true
-});;
+      const response = await axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/user/fetch_orders/${statusFilter}`, {
+        withCredentials: true
+      });;
       setOrders(response.data);
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -37,7 +38,7 @@ const UserOrders = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [statusFilter]);
 
   const handleAddOrder = (e) => {
     e.preventDefault();
@@ -92,6 +93,24 @@ const UserOrders = () => {
           </form>
         )}
 
+        <div className="flex items-center gap-3 mb-4">
+          <label htmlFor="statusFilter" className="text-gray-700 font-medium">
+            Filter by Status:
+          </label>
+          <select
+            id="statusFilter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="p-2 border border-gray-300 rounded"
+          >
+            <option value="All">All</option>
+            <option value="Pending">Pending</option>
+            <option value="In progress">In progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+
         <h3 className="text-xl font-semibold mb-4">Orders List</h3>
         <div className="grid gap-6">
           {orders.map((order, index) => (
@@ -113,17 +132,35 @@ const UserOrders = () => {
                   {order.status || 'Pending'}
                 </span>
               </div>
-              <p className="text-gray-600 mb-4">Place: {order.place}</p>
+
+              <p className="text-gray-600 mb-1">Place: {order.place}</p>
+
+              {order.startedAt && (
+                <p className="text-gray-600 text-sm">
+                  Started: {new Date(order.createdAt).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+              )}
+              {order.completedAt && (
+                <p className="text-gray-600 text-sm">Completed: {new Date(order.createdAt).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}</p>
+              )}
 
               {order.status !== 'Pending' ? (
                 <button
                   onClick={() => navigate(`/user/single_order/${order._id}`)}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+                  className="mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
                 >
                   View Details
                 </button>
               ) : (
-                <p className="text-sm text-red-500 italic">
+                <p className="text-sm text-red-500 italic mt-3">
                   Only available if admin activates this order
                 </p>
               )}
@@ -133,6 +170,7 @@ const UserOrders = () => {
             <p className="text-gray-500">No orders yet.</p>
           )}
         </div>
+
       </div>
     </div>
   );
