@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Typewriter from "typewriter-effect";
 import { FaUser, FaUserShield } from "react-icons/fa";
+import EImage from '../assets/abc.svg'
 
 const EntrancePage = () => {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ const EntrancePage = () => {
           className="w-full md:w-1/2"
         >
           <img
-            // src={EntranceImage}
+            src={EImage}
             alt="Finance Illustration"
             className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto"
           />
