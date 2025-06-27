@@ -2,8 +2,6 @@ import axios from 'axios';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-// import userImage from '../assets/login-bro.svg';
-// import adminImage from '../assets/login-rafiki.svg';
 import StatusTag from '../Components/StatusTag.jsx';
 
 const LoginComponent = ({ role }) => {

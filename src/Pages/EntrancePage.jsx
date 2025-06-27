@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Typewriter from "typewriter-effect";
 import { FaUser, FaUserShield } from "react-icons/fa";
-// import EntranceImage from "../assets/Entrance.svg"; // Add an SVG or illustration
 
 const EntrancePage = () => {
   const navigate = useNavigate();
