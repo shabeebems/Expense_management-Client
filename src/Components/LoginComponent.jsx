@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import StatusTag from '../Components/StatusTag.jsx';
-import adminImage from '../assets/adminLogin.svg'
-import userImage from '../assets/userLogin.svg'
+import adminImage from '../assets/adminlogin.svg'
+import userImage from '../assets/userlogin.svg'
 
 const LoginComponent = ({ role }) => {
   const [email, setEmail] = useState('');
