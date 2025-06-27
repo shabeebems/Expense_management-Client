@@ -2,9 +2,9 @@ import axios from 'axios';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import userImage from '../assets/login-bro.svg';
-import adminImage from '../assets/login-rafiki.svg';
-import StatusTag from '../Components/StatusTag.jsx'; // Ensure this path is correct
+// import userImage from '../assets/login-bro.svg';
+// import adminImage from '../assets/login-rafiki.svg';
+import StatusTag from '../Components/StatusTag.jsx';
 
 const LoginComponent = ({ role }) => {
   const [email, setEmail] = useState('');
@@ -45,7 +45,7 @@ const LoginComponent = ({ role }) => {
     loginCheck();
   };
 
-  const illustration = role === 'Admin' ? adminImage : userImage;
+  // const illustration = role === 'Admin' ? adminImage : userImage;
   const isAdmin = role === 'Admin';
 
   return (
@@ -57,7 +57,7 @@ const LoginComponent = ({ role }) => {
         {/* Illustration */}
         <div className="hidden md:flex w-1/2 justify-center bg-indigo-100 p-8">
           <img
-            src={illustration}
+            // src={illustration}
             alt={`${role} Illustration`}
             className="w-full max-w-sm"
           />
