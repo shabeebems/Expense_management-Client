@@ -1,10 +1,11 @@
-import Navbar from '../../Components/UserNavbar.jsx'
+import Navbar from '../../Components/Navbar.jsx'
 
 const UserHome = () => {
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
-      <Navbar page={"Home"}/>
+      <Navbar role="User" page={"Home"}/>
       {/* Main Content */}
       <main className="pt-24 px-4 md:px-10">
         <div className="max-w-4xl mx-auto text-center">

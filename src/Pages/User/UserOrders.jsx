@@ -1,38 +1,28 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../../Components/UserNavbar.jsx';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import Navbar from '../../Components/Navbar';
+import { AnimatePresence, motion } from 'framer-motion';
+import { HiOutlineClipboardList, HiOutlineLocationMarker, HiOutlineClock } from 'react-icons/hi';
 
 const UserOrders = () => {
   const [orders, setOrders] = useState([]);
   const [name, setName] = useState('');
   const [place, setPlace] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All');
+  const navigate = useNavigate();
+  const role = "User";
 
   const fetchOrders = async () => {
     try {
-      console.log('Fetching')
-      const response = await axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/user/fetch_orders/${statusFilter}`, {
-        withCredentials: true
-      });;
+      const response = await axios.get(
+        `${import.meta.env.VITE_SERVER_API_URL}/api/user/fetch_orders/${statusFilter}`,
+        { withCredentials: true }
+      );
       setOrders(response.data);
     } catch (err) {
       console.error('Error fetching orders:', err);
-    }
-  };
-
-  const createOrder = async () => {
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_SERVER_API_URL}/api/user/create_order`, {
-        name,
-        place
-      }, { withCredentials: true });
-
-      setOrders([...orders, response.data]);
-    } catch (err) {
-      console.error('Error creating order:', err);
     }
   };
 
@@ -40,138 +30,185 @@ const UserOrders = () => {
     fetchOrders();
   }, [statusFilter]);
 
-  const handleAddOrder = (e) => {
-    e.preventDefault();
-
-    if (!name || !place) {
-      alert('Please fill all fields');
-      return;
+  const createOrder = async () => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_API_URL}/api/user/create_order`,
+        { name, place },
+        { withCredentials: true }
+      );
+      setOrders([...orders, response.data]);
+      setName('');
+      setPlace('');
+      setShowModal(false);
+    } catch (err) {
+      console.error('Error creating order:', err);
     }
+  };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name || !place) return alert('All fields required');
     createOrder();
-    setName('');
-    setPlace('');
-    setShowForm(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 pt-24">
-      <Navbar page={"Orders"} />
-      <div className="p-6 max-w-3xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">Your Orders</h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-          >
-            {showForm ? 'Cancel' : 'Create New Order'}
-          </button>
-        </div>
+    <div className="min-h-screen bg-gray-100 pt-15">
+      <Navbar role={role} page="Orders" />
 
-        {showForm && (
-          <form onSubmit={handleAddOrder} className="bg-white shadow-md p-6 rounded-lg mb-8 space-y-4">
-            <input
-              type="text"
-              placeholder="Order Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded"
-            />
-            <input
-              type="text"
-              placeholder="Place"
-              value={place}
-              onChange={(e) => setPlace(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded"
-            />
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              Add Order
-            </button>
-          </form>
-        )}
-
-        <div className="flex items-center gap-3 mb-4">
-          <label htmlFor="statusFilter" className="text-gray-700 font-medium">
-            Filter by Status:
-          </label>
-          <select
-            id="statusFilter"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="p-2 border border-gray-300 rounded"
-          >
-            <option value="All">All</option>
-            <option value="Pending">Pending</option>
-            <option value="In progress">In progress</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
-
-        <h3 className="text-xl font-semibold mb-4">Orders List</h3>
-        <div className="grid gap-6">
-          {orders.map((order, index) => (
-            <div
-              key={index}
-              className="bg-white border border-gray-200 rounded-lg p-5 shadow-md"
-            >
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="text-xl font-bold text-gray-800">{order.name}</h4>
-                <span
-                  className={`text-sm px-3 py-1 rounded-full font-medium ${
-                    order.status === 'Pending'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : order.status === 'Completed'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-blue-100 text-blue-700'
-                  }`}
-                >
-                  {order.status || 'Pending'}
-                </span>
-              </div>
-
-              <p className="text-gray-600 mb-1">Place: {order.place}</p>
-
-              {order.startedAt && (
-                <p className="text-gray-600 text-sm">
-                  Started: {new Date(order.createdAt).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </p>
-              )}
-              {order.completedAt && (
-                <p className="text-gray-600 text-sm">Completed: {new Date(order.createdAt).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}</p>
-              )}
-
-              {order.status !== 'Pending' ? (
-                <button
-                  onClick={() => navigate(`/user/single_order/${order._id}`)}
-                  className="mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
-                >
-                  View Details
-                </button>
-              ) : (
-                <p className="text-sm text-red-500 italic mt-3">
-                  Only available if admin activates this order
-                </p>
-              )}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Top bar */}
+        <div className="flex flex-col lg:flex-row lg:justify-between items-start lg:items-center gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Your Orders</h1>
+            <p className="text-gray-600 text-sm mt-1">All orders with status filtering</p>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-6">
+            <div className="flex items-center gap-2">
+              <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700">
+                Filter
+              </label>
+              <select
+                id="statusFilter"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              >
+                <option value="All">All</option>
+                <option value="Pending">Pending</option>
+                <option value="In progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
             </div>
-          ))}
-          {orders.length === 0 && (
-            <p className="text-gray-500">No orders yet.</p>
+            
+            <button
+              onClick={() => setShowModal(true)}
+              className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md shadow-md transition duration-200 ease-in-out"
+            >
+              Create Order
+            </button>
+          </div>
+
+        </div>
+
+        {/* Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {orders.length > 0 ? (
+            orders.map((order) => (
+              <motion.div
+                key={order._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white shadow-md rounded-xl p-5 flex flex-col justify-between hover:shadow-xl transition"
+              >
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <HiOutlineClipboardList className="text-indigo-600 text-2xl" />
+                    <h2 className="text-xl font-semibold text-gray-800">{order.name}</h2>
+                  </div>
+                  <div className="text-gray-600 text-sm flex items-center gap-2 mb-1">
+                    <HiOutlineLocationMarker className="text-lg" />
+                    {order.place}
+                  </div>
+                  <div className="text-gray-500 text-xs flex items-center gap-2">
+                    <HiOutlineClock />
+                    Created: {new Date(order.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex justify-between items-center">
+                  <span
+                    className={`text-xs font-medium px-3 py-1 rounded-full ${
+                      order.status === 'Pending'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : order.status === 'Completed'
+                        ? 'bg-green-100 text-green-700'
+                        : order.status === 'Cancelled'
+                        ? 'bg-red-100 text-red-600'
+                        : 'bg-blue-100 text-blue-700'
+                    }`}
+                  >
+                    {order.status}
+                  </span>
+
+                  {order.status !== 'Pending' ? (
+                    <button
+                      onClick={() => navigate(`/user/single_order/${order._id}`)}
+                      className="cursor-pointer text-indigo-600 hover:underline text-sm"
+                    >
+                      View
+                    </button>
+                  ) : (
+                    <p className="text-xs text-red-500 italic">Waiting admin approval</p>
+                  )}
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <p className="col-span-full text-gray-500 text-center">No orders found.</p>
           )}
         </div>
-
       </div>
+
+      {/* Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 p-6"
+            >
+              <h2 className="text-xl font-semibold mb-4 text-indigo-700">New Order</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Order Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Eg. Repair AC"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={place}
+                    onChange={(e) => setPlace(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Eg. Malappuram"
+                  />
+                </div>
+                <div className="flex justify-between gap-3 pt-3">
+                  <button
+                    type="submit"
+                    className="w-full cursor-pointer bg-green-600 hover:bg-green-700 text-white py-2 rounded-md"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="w-full cursor-pointer bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-md"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

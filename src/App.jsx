@@ -9,22 +9,26 @@ import SingleOrder from './Pages/User/SingleOrder.jsx';
 import AdminOrders from './Pages/Admin/AdminOrders.jsx';
 import AdminSingleOrder from './Pages/Admin/AdminSingleOrder.jsx';
 import EntrancePage from './Pages/EntrancePage.jsx';
+import UserAuth from './Wrappers/UserAuth.jsx';
+import AdminAuth from './Wrappers/AdminAuth.jsx';
+import Auth from './Wrappers/Auth.jsx';
 
 function App() {
   return (
     <Routes>
-      <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/user/login" element={<UserLogin />} />
 
-      <Route path="/" element={<EntrancePage />} />
+      <Route path="/admin/login" element={<Auth><AdminLogin /></Auth>} />
+      <Route path="/user/login" element={<Auth><UserLogin /></Auth>} />
+      <Route path="/" element={<Auth><EntrancePage /></Auth>} />
       
-      <Route path="/admin" element={<AdminHome />} />
-      <Route path="/admin/orders" element={<AdminOrders />} />
-      <Route path="/admin/single_order/:id" element={<AdminSingleOrder />} />
+      <Route path="/admin" element={<AdminAuth><AdminHome /></AdminAuth>} />
+      <Route path="/admin/orders" element={<AdminAuth><AdminOrders /></AdminAuth>} />
+      <Route path="/admin/single_order/:id" element={<AdminAuth><AdminSingleOrder /></AdminAuth>} />
 
-      <Route path="/user" element={<UserHome />} />
-      <Route path="/user/orders" element={<UserOrders />} />
-      <Route path="/user/single_order/:id" element={<SingleOrder />} />
+      <Route path="/user" element={<UserAuth><UserHome /></UserAuth>} />
+      <Route path="/user/orders" element={<UserAuth><UserOrders /></UserAuth>} />
+      <Route path="/user/single_order/:id" element={<UserAuth><SingleOrder /></UserAuth>} />
+
     </Routes>
   )
 }

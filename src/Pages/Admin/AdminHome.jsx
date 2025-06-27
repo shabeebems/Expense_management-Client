@@ -1,11 +1,11 @@
 import React from 'react'
-import AdminNavbar from '../../Components/AdminNavbar.jsx'
+import AdminNavbar from '../../Components/Navbar.jsx'
 
 const AdminHome = () => {
   return (
     <div className="min-h-screen bg-gradient-to-r from-indigo-50 to-blue-50">
       {/* Navbar */}
-      <AdminNavbar page={"Home"} />
+      <AdminNavbar role="Admin" page={"Home"} />
       {/* Hero Content */}
       <main className="max-w-4xl mx-auto text-center py-20 px-4">
         <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 mb-6">
