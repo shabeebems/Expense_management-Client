@@ -14,6 +14,7 @@ import ManagerAuth from './Wrappers/ManagerAuth.jsx';
 import Auth from './Wrappers/Auth.jsx';
 import { useEffect } from 'react';
 import axios from 'axios';
+import RegisterComponent from './Pages/Manager/Register.jsx';
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
 
       <Route path="/manager/login" element={<Auth><ManagerLogin /></Auth>} />
       <Route path="/staff/login" element={<Auth><StaffLogin /></Auth>} />
+      <Route path="/manager/register" element={<Auth><RegisterComponent /></Auth>} />
       <Route path="/" element={<Auth><EntrancePage /></Auth>} />
       
       <Route path="/manager" element={<ManagerAuth><ManagerHome /></ManagerAuth>} />

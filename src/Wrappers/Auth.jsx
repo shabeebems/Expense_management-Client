@@ -8,10 +8,10 @@ const Auth = ({ children }) => {
     useEffect(() => {
         const token = JSON.parse(localStorage.getItem('token'));
         if(token) {
-            if(token.role === 'User') {
+            if(token.role === 'manager') {
+                navigate('/manager');
+            } else if(token.role === "user") {
                 navigate('/user');
-            } else if(token.role === "Admin") {
-                navigate('/admin');
             }
         }
     }, [location])
