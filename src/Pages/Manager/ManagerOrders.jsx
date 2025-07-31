@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react';
-import AdminNavbar from '../../Components/Navbar.jsx';
+import ManagerNavbar from '../../Components/Navbar.jsx';
 import axios from 'axios';
 import { useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HiOutlineClipboardList, HiOutlineLocationMarker, HiOutlineClock } from 'react-icons/hi';
 
-const AdminOrders = () => {
+const ManagerOrders = () => {
   const [orders, setOrders] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const navigate = useNavigate();
-  const role = 'Admin';
+  const role = 'Manager';
 
   const fetchOrders = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_API_URL}/api/admin/fetch_orders/${statusFilter}`,
+        `${import.meta.env.VITE_SERVER_API_URL}/api/manager/fetch_orders/${statusFilter}`,
         { withCredentials: true }
       );
       setOrders(response.data);
@@ -34,7 +34,7 @@ const AdminOrders = () => {
 
     if (newStatus !== currentStatus) {
       await axios.patch(
-        `${import.meta.env.VITE_SERVER_API_URL}/api/admin/update_order/${orderId}/${newStatus}`,
+        `${import.meta.env.VITE_SERVER_API_URL}/api/manager/update_order/${orderId}/${newStatus}`,
         {},
         { withCredentials: true }
       );
@@ -48,7 +48,7 @@ const AdminOrders = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 pt-16">
-      <AdminNavbar role={role} page="Orders" />
+      <ManagerNavbar role={role} page="Orders" />
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
@@ -152,7 +152,7 @@ const AdminOrders = () => {
                       ) : null}
 
                       <button
-                        onClick={() => navigate(`/admin/single_order/${order._id}`)}
+                        onClick={() => navigate(`/manager/single_order/${order._id}`)}
                         className="text-sm px-3 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
                       >
                         View
@@ -171,4 +171,4 @@ const AdminOrders = () => {
   );
 };
 
-export default AdminOrders;
+export default ManagerOrders;

@@ -8,16 +8,16 @@ const Navbar = ({ role, page }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const isAdmin = role === 'Admin';
+  const isManager = role === 'Manager';
 
-  const navItems = isAdmin
+  const navItems = isManager
     ? [
-        { label: 'Home', path: '/admin' },
-        { label: 'Orders', path: '/admin/orders' },
+        { label: 'Home', path: '/manager' },
+        { label: 'Orders', path: '/manager/orders' },
       ]
     : [
-        { label: 'Home', path: '/user' },
-        { label: 'Orders', path: '/user/orders' },
+        { label: 'Home', path: '/staff' },
+        { label: 'Orders', path: '/staff/orders' },
       ];
 
   const logout = async (e) => {
@@ -40,7 +40,7 @@ const Navbar = ({ role, page }) => {
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo */}
         <div className="text-2xl font-bold">
-          {isAdmin ? 'AdminPage' : 'ProFinance'}
+          {isManager ? 'Managerpage' : 'ProFinance'}
         </div>
 
         {/* Desktop Menu */}

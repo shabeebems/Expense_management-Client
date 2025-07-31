@@ -4,7 +4,7 @@ const AdminLogin = () => {
 
   return (
     <>
-      <LoginComponent role={"Admin"} />
+      <LoginComponent role={"manager"} />
     </>
   )
 }

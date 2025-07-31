@@ -1,11 +1,11 @@
 import Navbar from '../../Components/Navbar.jsx'
 
-const UserHome = () => {
+const StaffHome = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
-      <Navbar role="User" page={"Home"}/>
+      <Navbar role="Staff" page={"Home"}/>
       {/* Main Content */}
       <main className="pt-24 px-4 md:px-10">
         <div className="max-w-4xl mx-auto text-center">
@@ -24,4 +24,4 @@ const UserHome = () => {
   )
 }
 
-export default UserHome
+export default StaffHome

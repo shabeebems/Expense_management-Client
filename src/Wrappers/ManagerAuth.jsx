@@ -1,16 +1,16 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router';
 
-const AdminAuth = ({ children }) => {
+const ManagerAuth = ({ children }) => {
     const location = useLocation();
     const navigate = useNavigate();
-
     useEffect(() => {
         const token = JSON.parse(localStorage.getItem('token'));
+        
         if(!token) {
-            navigate('/admin/login');
-        } else if(token.role === 'User') {
-            navigate('/user');
+            navigate('/manager/login');
+        } else if(token.role === 'staff') {
+            navigate('/staff');
         }
     }, [location])
 
@@ -19,4 +19,4 @@ const AdminAuth = ({ children }) => {
     )
 }
 
-export default AdminAuth
+export default ManagerAuth

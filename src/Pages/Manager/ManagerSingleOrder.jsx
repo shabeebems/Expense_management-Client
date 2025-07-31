@@ -1,10 +1,10 @@
 import { useParams } from "react-router";
-import AdminNavbar from "../../Components/Navbar.jsx";
+import ManagerNavbar from "../../Components/Navbar.jsx";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
-const AdminSingleOrder = () => {
+const ManagerSingleOrder = () => {
   const { id } = useParams();
   const [order, setOrder] = useState({});
   const [showExpenseModal, setShowExpenseModal] = useState(false);
@@ -129,7 +129,7 @@ const AdminSingleOrder = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
-      <AdminNavbar role="Admin" page="Orders" />
+      <ManagerNavbar role="Manager" page="Orders" />
       
       <div className="max-w-7xl mx-auto p-6">
         <motion.h1 
@@ -497,4 +497,4 @@ const AdminSingleOrder = () => {
   );
 };
 
-export default AdminSingleOrder;
+export default ManagerSingleOrder;

@@ -3,14 +3,14 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import StatusTag from '../Components/StatusTag.jsx';
-import adminImage from '../assets/adminlogin.svg'
-import userImage from '../assets/userlogin.svg'
+import managerImage from '../assets/managerlogin.svg';
+import staffImage from '../assets/stafflogin.svg';
 
 const LoginComponent = ({ role }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [shake, setShake] = useState(false);
-  const [status, setStatus] = useState({ type: '', message: '' }); // 🆕
+  const [status, setStatus] = useState({ type: '', message: '' });
   const navigate = useNavigate();
 
   const loginCheck = async () => {
@@ -24,7 +24,6 @@ const LoginComponent = ({ role }) => {
       if (response.data.success) {
         setStatus({ type: 'success', message: response.data.message || 'Login successful!' });
         localStorage.setItem('token', JSON.stringify(response.data.token));
-        // Navigate after delay
         setTimeout(() => {
           navigate(`/${role.toLowerCase()}`);
         }, 1200);
@@ -45,36 +44,35 @@ const LoginComponent = ({ role }) => {
     loginCheck();
   };
 
-  const illustration = role === 'Admin' ? adminImage : userImage;
-  const isAdmin = role === 'Admin';
+  const illustration = role === 'manager' ? managerImage : staffImage;
+  const isManager = role === 'manager';
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center px-4">
       <div
-        className={`flex flex-col-reverse ${isAdmin ? 'md:flex-row-reverse' : 'md:flex-row'
-          } items-center max-w-5xl w-full bg-white/90 rounded-3xl shadow-2xl overflow-hidden`}
+        className={`flex flex-col ${isManager ? 'md:flex-row-reverse' : 'md:flex-row'
+          } items-center md:items-stretch max-w-5xl w-full bg-white/90 rounded-3xl shadow-2xl overflow-hidden`}
       >
-        {/* Illustration */}
-        <div className="hidden md:flex w-1/2 justify-center bg-indigo-100 p-8">
+        {/* Image Section */}
+        <div className="w-full md:w-1/2 flex items-center justify-center bg-indigo-100 p-8">
           <img
             src={illustration}
             alt={`${role} Illustration`}
-            className="w-full max-w-sm"
+            className="w-3/4 md:w-4/5 lg:w-3/4 h-auto"
           />
         </div>
 
-        {/* Form */}
+        {/* Form Section */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className={`w-full md:w-1/2 p-8 sm:p-12 ${shake ? 'animate-shake' : ''}`}
+          className={`w-full md:w-1/2 p-8 sm:p-12 flex flex-col justify-center ${shake ? 'animate-shake' : ''}`}
         >
           <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">
-            {role} Login
+            {role.charAt(0).toUpperCase() + role.slice(1)} Login
           </h2>
 
-          {/* 🆕 Animated Tag Notification */}
           <StatusTag
             type={status.type}
             message={status.message}
@@ -110,7 +108,7 @@ const LoginComponent = ({ role }) => {
               </label>
             </div>
 
-            {/* Button */}
+            {/* Login Button */}
             <motion.button
               whileTap={{ scale: 0.98 }}
               whileHover={{ scale: 1.02 }}
@@ -120,13 +118,27 @@ const LoginComponent = ({ role }) => {
               Login
             </motion.button>
 
+            {/* Register Link (Only for Manager) */}
+            {role === 'manager' && (
+              <div className="text-center text-sm text-gray-500 mt-2">
+                Don’t have an account?{' '}
+                <Link
+                  to="/manager/register"
+                  className="text-indigo-600 hover:underline ml-1"
+                >
+                  Register Here
+                </Link>
+              </div>
+            )}
+
+            {/* Switch Role Link */}
             <div className="text-center text-sm text-gray-500 mt-2">
               Not a {role}?{' '}
               <Link
-                to={role === 'User' ? '/admin/login' : '/user/login'}
+                to={role === 'staff' ? '/manager/login' : '/staff/login'}
                 className="text-indigo-600 hover:underline ml-1"
               >
-                Switch to {role === 'User' ? 'Admin' : 'User'}
+                Switch to {role === 'staff' ? 'Manager' : 'Staff'}
               </Link>
             </div>
           </form>

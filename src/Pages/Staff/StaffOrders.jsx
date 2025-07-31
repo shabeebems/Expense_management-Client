@@ -5,19 +5,19 @@ import Navbar from '../../Components/Navbar';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HiOutlineClipboardList, HiOutlineLocationMarker, HiOutlineClock } from 'react-icons/hi';
 
-const UserOrders = () => {
+const StaffOrders = () => {
   const [orders, setOrders] = useState([]);
   const [name, setName] = useState('');
   const [place, setPlace] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All');
   const navigate = useNavigate();
-  const role = "User";
+  const role = "Staff";
 
   const fetchOrders = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_API_URL}/api/user/fetch_orders/${statusFilter}`,
+        `${import.meta.env.VITE_SERVER_API_URL}/api/staff/fetch_orders/${statusFilter}`,
         { withCredentials: true }
       );
       setOrders(response.data);
@@ -33,7 +33,7 @@ const UserOrders = () => {
   const createOrder = async () => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_API_URL}/api/user/create_order`,
+        `${import.meta.env.VITE_SERVER_API_URL}/api/staff/create_order`,
         { name, place },
         { withCredentials: true }
       );
@@ -135,7 +135,7 @@ const UserOrders = () => {
 
                   {order.status !== 'Pending' ? (
                     <button
-                      onClick={() => navigate(`/user/single_order/${order._id}`)}
+                      onClick={() => navigate(`/staff/single_order/${order._id}`)}
                       className="cursor-pointer text-indigo-600 hover:underline text-sm"
                     >
                       View
@@ -213,4 +213,4 @@ const UserOrders = () => {
   );
 };
 
-export default UserOrders;
+export default StaffOrders;

@@ -3,7 +3,7 @@ import LoginComponent from '../../Components/LoginComponent.jsx'
 const UserLogin = () => {
   return (
     <>
-      <LoginComponent role={"User"} />
+      <LoginComponent role={"staff"} />
     </>
   )
 }
