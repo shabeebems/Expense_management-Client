@@ -38,33 +38,37 @@ const Home = () => {
       );
       setLedgers([...ledgers, response.data]);
     } catch (error) {
-      console.error('Error creating ledger:', err);
+      console.error('Error creating ledger:', error);
     }
     setNewName('');
     setShowModal(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-16">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:justify-between items-start lg:items-center gap-4 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Ledgers</h1>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 pb-8">
+        {/* Compact Header */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-blue-600 bg-clip-text text-transparent">
+              Ledgers
+            </h1>
+            <p className="text-slate-600 text-sm mt-1">Manage your financial records</p>
+          </div>
 
-          {/* Add New Button */}
           <button
             onClick={() => setShowModal(true)}
-            className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+            className="group flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
           >
-            <PlusCircleIcon className="w-5 h-5" />
+            <PlusCircleIcon className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
             Add New
           </button>
         </div>
 
-        {/* Ledgers Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Compact Ledgers Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <AnimatePresence>
             {ledgers.length > 0 ? (
               ledgers.map((ledger) => (
@@ -74,73 +78,87 @@ const Home = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white shadow-md rounded-xl p-5 flex flex-col justify-between hover:shadow-xl transition"
+                  className="group bg-white/80 backdrop-blur-sm border border-slate-200 hover:border-blue-300 rounded-xl p-4 hover:shadow-xl hover:shadow-blue-100/50 transition-all duration-300"
                 >
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <HiOutlineClipboardList className="text-indigo-600 text-2xl" />
-                      <h2 className="text-xl font-semibold text-gray-800">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-sm">
+                        <HiOutlineClipboardList className="text-white text-lg" />
+                      </div>
+                      <h2 className="text-lg font-semibold text-slate-800 group-hover:text-blue-700 transition-colors">
                         {ledger.name}
                       </h2>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="mt-4 flex justify-between items-center">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() =>
-                          navigate(`/single_ledger/${ledger._id}`)
-                        }
-                        className="cursor-pointer text-sm px-3 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
-                      >
-                        View
-                      </button>
-                    </div>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => navigate(`/single_ledger/${ledger._id}`)}
+                      className="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
+                    >
+                      View
+                    </button>
                   </div>
                 </motion.div>
               ))
             ) : (
-              <p className="col-span-full text-center text-gray-500">
-                No Ledgers found.
-              </p>
+              <div className="col-span-full flex flex-col items-center justify-center py-12">
+                <div className="p-3 bg-slate-100 rounded-full mb-3">
+                  <HiOutlineClipboardList className="text-slate-400 text-2xl" />
+                </div>
+                <p className="text-slate-500 text-center">No ledgers found</p>
+              </div>
             )}
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Compact Modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-80">
-            <h2 className="text-lg font-bold mb-4">Add New Ledger</h2>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Ledger Name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-                >
-                  Submit
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-4"
+        >
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-slate-200"
+          >
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-slate-800 mb-4">Add New Ledger</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Enter ledger name"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    required
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 px-4 py-2.5 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-colors duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all duration-200"
+                  >
+                    Create
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );
