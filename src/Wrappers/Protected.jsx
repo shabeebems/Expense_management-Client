@@ -1,17 +1,14 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router';
 
-const StaffAuth = ({ children }) => {
+const Protected = ({ children }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
     useEffect(() => {
         const token = JSON.parse(localStorage.getItem('token'));
-        console.log(token)
         if(!token) {
-            navigate('/staff/login');
-        } else if(token.role === 'manager') {
-            navigate('/manager');
+            navigate('/login');
         }
     }, [location])
 
@@ -20,4 +17,4 @@ const StaffAuth = ({ children }) => {
     )
 }
 
-export default StaffAuth
+export default Protected
