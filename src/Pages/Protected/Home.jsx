@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HiOutlineClipboardList } from 'react-icons/hi';
 import { PlusCircleIcon } from '@heroicons/react/24/solid';
-import NewNavbar from '../../Components/NewNavbar.jsx';
+import Navbar from '../../Components/Navbar.jsx';
 
 const Home = () => {
   const [ledgers, setLedgers] = useState([]);
@@ -46,7 +46,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 pt-16">
-      <NewNavbar />
+      <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
