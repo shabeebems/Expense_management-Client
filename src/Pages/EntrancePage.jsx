@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Typewriter from "typewriter-effect";
-import { FaUser, FaUserShield } from "react-icons/fa";
-import EntranceImage from '../assets/entrance.svg';
+import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
+import FinanceImage from "../assets/entrance.svg";
 
 const EntrancePage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-blue-100 via-white to-purple-100 flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-tr from-blue-50 via-white to-green-50 flex items-center justify-center px-4 py-10">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -17,13 +17,13 @@ const EntrancePage = () => {
       >
         {/* Left Side - Text */}
         <div className="w-full md:w-1/2 text-center md:text-left space-y-5">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 leading-snug">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600 leading-snug">
             <Typewriter
               options={{
                 strings: [
-                  "Welcome to BudgetFlow",
-                  "Your Ultimate Project Expense Tracker",
-                  "Track. Analyze. Succeed.",
+                  "Welcome to ExpenseFlow",
+                  "Track All Your Finances in One Place",
+                  "Organize. Manage. Succeed.",
                 ],
                 autoStart: true,
                 loop: true,
@@ -32,24 +32,23 @@ const EntrancePage = () => {
           </h1>
 
           <p className="text-gray-700 text-base sm:text-lg">
-            BudgetFlow helps Site Contractors and Project Staff easily manage incomes and expenses for their ongoing projects.
-            Track financials, approve project activities, and maintain full control over project budgets.
+            ExpenseFlow helps you keep track of incomes and expenses for different areas of life —
+            whether it’s your business, household, food, or parties — all neatly organized in separate
+            <span className="font-semibold"> Ledgers</span>.
           </p>
 
-          {/* About Project Section */}
           <div className="mt-6 text-gray-700 text-sm sm:text-base space-y-3">
-            <h2 className="text-xl font-bold text-indigo-700">About BudgetFlow</h2>
+            <h2 className="text-xl font-bold text-green-700">About ExpenseFlow</h2>
             <p>
-              BudgetFlow is a project expense management system designed for <span className="font-semibold">Site Contractors</span> and their <span className="font-semibold">Site Staff</span>. Staff members can propose new projects and add expense records, while contractors oversee approvals and manage both incomes and expenses.
+              Create different <span className="font-semibold">Ledgers</span> for each category like
+              <span className="font-semibold"> Business, House, Food, and Party</span>. Each Ledger
+              stores all your incomes and expenses for that category.
             </p>
-            <h3 className="font-semibold text-indigo-600">User Roles:</h3>
+            <h3 className="font-semibold text-green-600">What You Can Do:</h3>
             <ul className="list-disc list-inside space-y-1">
-              <li>
-                <span className="font-semibold">Manager (Site Contractor):</span> Approves projects, manages incomes and expenses, adds Staff members, and monitors project progress.
-              </li>
-              <li>
-                <span className="font-semibold">Staff (Site Staff):</span> Can create project requests (approval required) and add expense entries.
-              </li>
+              <li>Create new Ledgers for different purposes.</li>
+              <li>Add income and expense records in each Ledger.</li>
+              <li>Keep your finances organized and easy to track.</li>
             </ul>
           </div>
         </div>
@@ -62,23 +61,23 @@ const EntrancePage = () => {
           className="w-full md:w-1/2 flex flex-col items-center"
         >
           <img
-            src={EntranceImage}
-            alt="Finance Illustration"
+            src={FinanceImage}
+            alt="Expense Illustration"
             className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto"
           />
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6 w-full">
             <button
-              onClick={() => navigate("/staff/login")}
-              className="flex items-center justify-center gap-2 px-6 py-3 cursor-pointer bg-indigo-600 text-white text-base sm:text-lg font-semibold rounded-xl shadow-md hover:bg-indigo-700 transition duration-300 w-full sm:w-auto"
+              onClick={() => navigate("/login")}
+              className="flex items-center justify-center gap-2 px-6 py-3 cursor-pointer bg-green-600 text-white text-base sm:text-lg font-semibold rounded-xl shadow-md hover:bg-green-700 transition duration-300 w-full sm:w-auto"
             >
-              <FaUser /> Staff Portal
+              <FaSignInAlt /> Login
             </button>
             <button
-              onClick={() => navigate("/manager/login")}
-              className="flex items-center justify-center gap-2 px-6 py-3 cursor-pointer bg-green-500 text-white text-base sm:text-lg font-semibold rounded-xl shadow-md hover:bg-green-600 transition duration-300 w-full sm:w-auto"
+              onClick={() => navigate("/register")}
+              className="flex items-center justify-center gap-2 px-6 py-3 cursor-pointer bg-blue-500 text-white text-base sm:text-lg font-semibold rounded-xl shadow-md hover:bg-blue-600 transition duration-300 w-full sm:w-auto"
             >
-              <FaUserShield /> Manager Portal
+              <FaUserPlus /> Register
             </button>
           </div>
         </motion.div>

@@ -2,10 +2,10 @@ import axios from 'axios';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import StatusTag from '../../Components/StatusTag.jsx';
-import managerImage from '../../assets/managerlogin.svg';
+import StatusTag from '../../Components/StatusTag';
+import Image from '../../assets/managerlogin.svg';
 
-const RegisterComponent = () => {
+const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,7 +33,7 @@ const RegisterComponent = () => {
         setStatus({ type: 'success', message: response.data.message || 'Registration successful!' });
         localStorage.setItem('token', JSON.stringify(response.data.token));
         setTimeout(() => {
-          navigate('/manager/login');
+          navigate('/home');
         }, 1200);
       } else {
         setStatus({ type: 'error', message: response.data.message || 'Registration failed.' });
@@ -54,13 +54,13 @@ const RegisterComponent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center px-4">
-      <div className="flex flex-col md:flex-row-reverse items-center md:items-stretch max-w-5xl w-full bg-white/90 rounded-3xl shadow-2xl overflow-hidden">
+      <div className="flex flex-col md:flex-row items-center md:items-stretch max-w-5xl w-full bg-white/90 rounded-3xl shadow-2xl overflow-hidden">
         
         {/* Image Section */}
-        <div className="w-full md:w-1/2 flex items-center justify-center bg-indigo-100 p-8">
+        <div className="w-full md:w-1/2 flex items-center justify-center p-8">
           <img
-            src={managerImage}
-            alt="Manager Illustration"
+            src={Image}
+            alt="Illustration"
             className="w-3/4 md:w-4/5 lg:w-3/4 h-auto"
           />
         </div>
@@ -72,8 +72,8 @@ const RegisterComponent = () => {
           transition={{ duration: 0.6 }}
           className={`w-full md:w-1/2 p-8 sm:p-12 flex flex-col justify-center ${shake ? 'animate-shake' : ''}`}
         >
-          <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">
-            Manager Register
+          <h2 className="text-3xl font-bold text-center text-green-700 mb-6">
+            Register
           </h2>
 
           <StatusTag
@@ -144,7 +144,7 @@ const RegisterComponent = () => {
               whileTap={{ scale: 0.98 }}
               whileHover={{ scale: 1.02 }}
               type="submit"
-              className="w-full cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-300"
+              className="w-full cursor-pointer bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-all duration-300"
             >
               Register
             </motion.button>
@@ -153,8 +153,8 @@ const RegisterComponent = () => {
             <div className="text-center text-sm text-gray-500 mt-2">
               Already have an account?{' '}
               <Link
-                to="/manager/login"
-                className="text-indigo-600 hover:underline ml-1"
+                to="/login"
+                className="text-green-600 hover:underline ml-1"
               >
                 Login Here
               </Link>
@@ -166,4 +166,4 @@ const RegisterComponent = () => {
   );
 };
 
-export default RegisterComponent;
+export default Register;
