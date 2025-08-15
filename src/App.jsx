@@ -14,7 +14,7 @@ function App() {
 
     useEffect(() => {
       const runServer = async() => {
-        await axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/staff/run-server`);
+        await axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/run-server`);
       }
       runServer()
     }, [])
