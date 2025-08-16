@@ -21,8 +21,8 @@ const EntrancePage = () => {
             <Typewriter
               options={{
                 strings: [
-                  "Welcome to ExpenseFlow",
-                  "Track All Your Finances in One Place",
+                  "Welcome to ProFinance",
+                  "Simplify Your Finances",
                   "Organize. Manage. Succeed.",
                 ],
                 autoStart: true,
@@ -32,13 +32,13 @@ const EntrancePage = () => {
           </h1>
 
           <p className="text-gray-700 text-base sm:text-lg">
-            ExpenseFlow helps you keep track of incomes and expenses for different areas of life —
+            ProFinance helps you keep track of incomes and expenses for different areas of life —
             whether it’s your business, household, food, or parties — all neatly organized in separate
             <span className="font-semibold"> Ledgers</span>.
           </p>
 
           <div className="mt-6 text-gray-700 text-sm sm:text-base space-y-3">
-            <h2 className="text-xl font-bold text-green-700">About ExpenseFlow</h2>
+            <h2 className="text-xl font-bold text-green-700">About ProFinance</h2>
             <p>
               Create different <span className="font-semibold">Ledgers</span> for each category like
               <span className="font-semibold"> Business, House, Food, and Party</span>. Each Ledger
