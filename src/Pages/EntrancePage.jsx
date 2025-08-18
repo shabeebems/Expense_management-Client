@@ -2,7 +2,7 @@ import Benefits from "../Components/Entrance/Benefits";
 import CallToAction from "../Components/Entrance/CallToAction";
 import Features from "../Components/Entrance/Features";
 import Footer from "../Components/Entrance/Footer";
-import Hero from "../Components/Entrance/hero";
+import Hero from "../Components/Entrance/Hero";
 import HowItWorks from "../Components/Entrance/HowItWorks";
 import Statistics from "../Components/Entrance/Statistics";
 import Testimonials from "../Components/Entrance/Testimonials";
