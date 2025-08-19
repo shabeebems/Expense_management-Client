@@ -1,100 +1,182 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Plus, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 
 const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
-    activity: "",
-    type: "income",
-    amount: ""
+    activity: '',
+    amount: 0,
+    type: 'income'
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
-    setFormData({ activity: "", type: "income", amount: "" });
+    if (!formData.activity.trim() || formData.amount <= 0) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+      setFormData({ activity: '', amount: 0, type: 'income' });
+      onClose();
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  if (!isOpen) return null;
+  const handleClose = () => {
+    setFormData({ activity: '', amount: 0, type: 'income' });
+    onClose();
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md border border-slate-200 transform transition-all">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold text-slate-800 mb-5">Add Transaction</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Activity</label>
-              <input
-                type="text"
-                placeholder="Enter activity description"
-                value={formData.activity}
-                onChange={(e) =>
-                  setFormData({ ...formData, activity: e.target.value })
-                }
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                required
-              />
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={handleClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 50 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 50 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="relative bg-gradient-to-r from-emerald-500 via-blue-500 to-indigo-600 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <DollarSign className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">Add Transaction</h2>
+                    <p className="text-blue-100 text-sm">Record income or expense</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleClose}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors duration-200"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Type</label>
-              <div className="relative">
-                <select
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
-                >
-                  <option value="income">💰 Income</option>
-                  <option value="expense">💸 Expense</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
+            {/* Content */}
+            <form onSubmit={handleSubmit} className="p-6">
+              {/* Transaction Type */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-3">
+                  Transaction Type
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, type: 'income' }))}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+                      formData.type === 'income'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    Income
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, type: 'expense' }))}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+                      formData.type === 'expense'
+                        ? 'border-red-500 bg-red-50 text-red-700'
+                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    <TrendingDown className="w-4 h-4" />
+                    Expense
+                  </motion.button>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Amount</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-medium">$</span>
+              {/* Activity */}
+              <div className="mb-6">
+                <label htmlFor="activity" className="block text-sm font-medium text-slate-700 mb-2">
+                  Description
+                </label>
                 <input
-                  type="number"
-                  placeholder="0.00"
-                  value={formData.amount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, amount: e.target.value })
-                  }
-                  className="w-full pl-8 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  required
-                  step="0.01"
-                  min="0"
+                  id="activity"
+                  type="text"
+                  value={formData.activity}
+                  onChange={(e) => setFormData(prev => ({ ...prev, activity: e.target.value }))}
+                  placeholder="e.g., Salary, Groceries, Rent"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-slate-400"
+                  autoFocus
+                  disabled={isSubmitting}
                 />
               </div>
-            </div>
 
-            <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2.5 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-colors duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                Add Transaction
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+              {/* Amount */}
+              <div className="mb-6">
+                <label htmlFor="amount" className="block text-sm font-medium text-slate-700 mb-2">
+                  Amount (₹)
+                </label>
+                <input
+                  id="amount"
+                  type="number"
+                  value={formData.amount || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-slate-400"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="flex-1 px-4 py-3 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl font-medium transition-all duration-200"
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  disabled={!formData.activity.trim() || formData.amount <= 0 || isSubmitting}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    formData.type === 'income'
+                      ? 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white'
+                      : 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white'
+                  }`}
+                >
+                  {isSubmitting ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
+                  {isSubmitting ? 'Adding...' : `Add ${formData.type}`}
+                </motion.button>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
