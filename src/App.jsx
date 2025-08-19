@@ -27,7 +27,7 @@ function App() {
       <Route path="/register" element={<Auth><Register /></Auth>} />
       
       <Route path="/home" element={<Protected><Home /></Protected>} />
-      <Route path="/single_ledger/:ledgerId" element={<Protected><Transactions /></Protected>} />
+      <Route path="/transactions/:ledgerId" element={<Protected><Transactions /></Protected>} />
 
     </Routes>
   )
