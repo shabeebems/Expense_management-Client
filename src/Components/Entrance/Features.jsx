@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { BookOpen, DollarSign, Shield, Smartphone, Zap, Sparkles, Wallet } from "lucide-react";
+import { BookOpen, DollarSign, Shield, Smartphone, Zap, Sparkles, Wallet, BarChart3, BarChart3Icon } from "lucide-react";
 
 const Features = () => {
   const [ref, inView] = useInView({
@@ -105,7 +105,7 @@ const Features = () => {
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <BarChart3Icon className="w-4 h-4 mr-2" />
             </motion.div>
             Core Features
           </motion.div>

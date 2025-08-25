@@ -8,6 +8,7 @@ import Image from '../../assets/managerlogin.svg';
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [shake, setShake] = useState(false);
@@ -25,7 +26,7 @@ const Register = () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_SERVER_API_URL}/api/auth/register`,
-        { name, email, password },
+        { name, email, username, password },
         { withCredentials: true }
       );
 
@@ -108,6 +109,20 @@ const Register = () => {
               />
               <label className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm">
                 Email Address
+              </label>
+            </div>
+
+            {/* Username */}
+            <div className="relative group">
+              <input
+                type="username"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="peer w-full px-4 pt-5 pb-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:shadow-xl transition-all duration-300"
+              />
+              <label className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm">
+                Username
               </label>
             </div>
 
