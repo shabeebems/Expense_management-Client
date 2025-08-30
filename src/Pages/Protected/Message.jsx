@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 import axios from 'axios';
 import { useNavigate } from 'react-router';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = `${import.meta.env.VITE_SERVER_API_URL}/api`;
 
 function Message() {
   const socket = useRef(null);
@@ -55,7 +55,7 @@ function Message() {
   useEffect(() => {
     if (!user?._id) return;
 
-    socket.current = io('http://localhost:5000');
+    socket.current = io(`${import.meta.env.VITE_SERVER_API_URL}`);
 
     socket.current.emit("setup", {
       username: user.username,
