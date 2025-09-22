@@ -75,7 +75,6 @@ const Login = () => {
           }`}
         >
           <h2 className="text-3xl font-bold text-center text-green-700 mb-6">Login</h2>
-
           <StatusTag
             type={status.type}
             message={status.message}
