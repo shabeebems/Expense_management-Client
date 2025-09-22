@@ -1,7 +1,7 @@
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { HiOutlineLogout, HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
 import { FaChartLine } from 'react-icons/fa';
-import { HiOutlineClipboardList } from 'react-icons/hi';
+import { HiOutlineClipboardList, HiOutlineMail } from 'react-icons/hi';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -138,6 +138,47 @@ const Navbar = () => {
                 </Link>
               </motion.div>
 
+              {/* Messages Button */}
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link
+                  to="/messages"
+                  className={`relative flex items-center space-x-3 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 overflow-hidden ${
+                    isActive('/messages')
+                      ? isScrolled
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
+                        : 'bg-white/20 text-white shadow-xl backdrop-blur-xl border border-white/30'
+                      : isScrolled
+                        ? 'text-slate-700 hover:text-emerald-600 hover:bg-emerald-50/80'
+                        : 'text-blue-100 hover:text-white hover:bg-white/20 backdrop-blur-sm'
+                  }`}
+                >
+                  <div className="relative z-10 flex items-center space-x-3">
+                    <HiOutlineMail className="text-lg" />
+                    <span>Messages</span>
+                    {isActive('/messages') && (
+                      <motion.div 
+                        className="w-2 h-2 bg-emerald-400 rounded-full"
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                    )}
+                  </div>
+                  
+                  {/* Animated background for active state */}
+                  {isActive('/messages') && (
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 rounded-2xl"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  )}
+                </Link>
+              </motion.div>
+
               {/* Premium Logout Button */}
               <motion.button
                 onClick={logout}
@@ -241,6 +282,36 @@ const Navbar = () => {
                       <HiOutlineClipboardList className="text-lg" />
                       <span className="font-semibold">Ledgers</span>
                       {isActive('/home') && (
+                        <motion.div 
+                          className="w-2 h-2 bg-emerald-400 rounded-full ml-auto"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
+                    </Link>
+                  </motion.div>
+
+                  {/* Mobile Messages Link */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Link
+                      to="/messages"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
+                        isActive('/messages')
+                          ? isScrolled
+                            ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg'
+                            : 'bg-white/20 text-white shadow-xl backdrop-blur-xl'
+                          : isScrolled
+                            ? 'text-slate-700 hover:bg-slate-100'
+                            : 'text-white hover:bg-white/10'
+                      }`}
+                    >
+                      <HiOutlineMail className="text-lg" />
+                      <span className="font-semibold">Messages</span>
+                      {isActive('/messages') && (
                         <motion.div 
                           className="w-2 h-2 bg-emerald-400 rounded-full ml-auto"
                           animate={{ scale: [1, 1.2, 1] }}
