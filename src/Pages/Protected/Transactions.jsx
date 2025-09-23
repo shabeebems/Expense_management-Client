@@ -13,7 +13,10 @@ import {
   Search,
   UserPlus,
   X,
-  CheckCircle
+  CheckCircle,
+  Lock,
+  Unlock,
+  AlertCircle
 } from 'lucide-react';
 import AddTransactionModal from '../../Components/AddTransactionModal';
 import Navbar from '../../Components/Navbar';
@@ -32,6 +35,7 @@ const Transactions = () => {
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [members, setMembers] = useState([]);
   const [showMemberInput, setShowMemberInput] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const fetchIncomeAndExpense = async () => {
     try {
@@ -73,6 +77,23 @@ const Transactions = () => {
       setMembers(response.data.members)
     } catch (error) {
       console.error('Error fetching ledger:', error);
+    }
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    setIsUpdatingStatus(true);
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_SERVER_API_URL}/api/ledger/${ledgerId}`,
+        { status: newStatus },
+        { withCredentials: true }
+      );
+      
+      setLedger(prev => ({ ...prev, status: newStatus }));
+    } catch (error) {
+      console.error('Error updating ledger status:', error);
+    } finally {
+      setIsUpdatingStatus(false);
     }
   };
 
@@ -150,6 +171,8 @@ const Transactions = () => {
     }
   };
 
+  const isLedgerClosed = ledger?.status === 'closed';
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
@@ -200,22 +223,75 @@ const Transactions = () => {
               <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-800 to-blue-600 bg-clip-text text-transparent">
                 Transactions
               </h1>
-              {ledger && (
-                <p className="text-slate-600 mt-1">{ledger.name}</p>
-              )}
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200"
-          >
-            <Plus className="w-4 h-4" />
-            Add Transaction
-          </motion.button>
+          <div className="flex items-center gap-2">
+            {/* Reopen Button - Only show when ledger is closed */}
+            {isLedgerClosed && (
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleStatusChange('active')}
+                disabled={isUpdatingStatus}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:cursor-not-allowed"
+              >
+                <Unlock className="w-4 h-4" />
+                {isUpdatingStatus ? 'Reopening...' : 'Reopen Ledger'}
+              </motion.button>
+            )}
+
+            {/* Close Button - Only show when ledger is active */}
+            {!isLedgerClosed && (
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleStatusChange('closed')}
+                disabled={isUpdatingStatus}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:cursor-not-allowed"
+              >
+                <Lock className="w-4 h-4" />
+                {isUpdatingStatus ? 'Closing...' : 'Close Ledger'}
+              </motion.button>
+            )}
+
+            {/* Add Transaction Button */}
+            <motion.button
+              whileHover={!isLedgerClosed ? { scale: 1.05, y: -2 } : {}}
+              whileTap={!isLedgerClosed ? { scale: 0.95 } : {}}
+              onClick={() => !isLedgerClosed && setShowModal(true)}
+              disabled={isLedgerClosed}
+              className={`flex items-center gap-2 px-6 py-3 font-semibold rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 ${
+                isLedgerClosed 
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed opacity-60' 
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
+              }`}
+            >
+              <Plus className="w-4 h-4" />
+              Add Transaction
+            </motion.button>
+          </div>
         </motion.div>
+
+        {/* Closed Ledger Notice */}
+        {isLedgerClosed && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 rounded-2xl p-4 mb-6 shadow-lg"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-500/10 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-amber-800 font-medium">Ledger is Closed</h3>
+                <p className="text-amber-700 text-sm">You cannot add new transactions or members while the ledger is closed. Click "Reopen Ledger" to resume operations.</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Ledger Summary */}
         {ledger && (
@@ -227,8 +303,18 @@ const Transactions = () => {
           >
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">{ledger.name}</h2>
-                <div className="flex items-center gap-4 text-sm text-slate-500 mt-2">
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold text-slate-800">{ledger.name}</h2>
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
+                    isLedgerClosed 
+                      ? 'bg-red-100 text-red-700 border border-red-200' 
+                      : 'bg-green-100 text-green-700 border border-green-200'
+                  }`}>
+                    {isLedgerClosed ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                    {isLedgerClosed ? 'Closed' : 'Active'}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-sm text-slate-500">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     Created: {formatDate(ledger.createdAt)}
@@ -236,7 +322,7 @@ const Transactions = () => {
                   <div className="hidden sm:block w-1 h-1 bg-slate-300 rounded-full"></div>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    Updated: {formatDate(ledger.updatedAt)}
+                    Last updated: {formatDate(ledger.updatedAt)}
                   </div>
                 </div>
               </div>
@@ -310,10 +396,15 @@ const Transactions = () => {
               </div>
               
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowMemberInput(!showMemberInput)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                whileHover={!isLedgerClosed ? { scale: 1.05 } : {}}
+                whileTap={!isLedgerClosed ? { scale: 0.95 } : {}}
+                onClick={() => !isLedgerClosed && setShowMemberInput(!showMemberInput)}
+                disabled={isLedgerClosed}
+                className={`flex items-center gap-2 px-4 py-2 font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ${
+                  isLedgerClosed
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed opacity-60'
+                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white'
+                }`}
               >
                 <UserPlus className="w-4 h-4" />
                 Add Member
@@ -322,7 +413,7 @@ const Transactions = () => {
 
             {/* Add Member Input */}
             <AnimatePresence>
-              {showMemberInput && (
+              {showMemberInput && !isLedgerClosed && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -443,10 +534,15 @@ const Transactions = () => {
               </div>
               
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowMemberInput(!showMemberInput)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                whileHover={!isLedgerClosed ? { scale: 1.05 } : {}}
+                whileTap={!isLedgerClosed ? { scale: 0.95 } : {}}
+                onClick={() => !isLedgerClosed && setShowMemberInput(!showMemberInput)}
+                disabled={isLedgerClosed}
+                className={`flex items-center gap-2 px-4 py-2 font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ${
+                  isLedgerClosed
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed opacity-60'
+                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white'
+                }`}
               >
                 <UserPlus className="w-4 h-4" />
                 Add Member
@@ -455,7 +551,7 @@ const Transactions = () => {
 
             {/* Add Member Input */}
             <AnimatePresence>
-              {showMemberInput && (
+              {showMemberInput && !isLedgerClosed && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
