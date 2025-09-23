@@ -24,6 +24,7 @@ function Message() {
   const [chats, setChats] = useState([]);
   const [user, setUser] = useState({});
   const [loading, setLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
@@ -146,10 +147,10 @@ function Message() {
 
   // Focus input when chat selected
   useEffect(() => {
-    if (selectedChat && inputRef.current) {
+    if (selectedChat && inputRef.current && !isSending) {
       inputRef.current.focus();
     }
-  }, [selectedChat]);
+  }, [selectedChat, isSending]);
 
   const filteredChats = chats.filter(chat =>
     chat.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -157,13 +158,16 @@ function Message() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedChat) return;
+    if (!newMessage.trim() || !selectedChat || isSending) return;
 
+    const messageToSend = newMessage;
+    setIsSending(true);
+    
     try {
       const response = await axios.post(
         `${API_URL}/messages`,
         {
-          content: newMessage,
+          content: messageToSend,
           chatId: selectedChat._id,
           ledgerId: selectedChat.ledgerId,
         },
@@ -179,11 +183,21 @@ function Message() {
       }
     } catch (error) {
       console.error('Error sending message:', error);
+      // Restore the message if there was an error
+      setNewMessage(messageToSend);
+    } finally {
+      setIsSending(false);
+      // Focus back to input after sending
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isSending) {
       e.preventDefault();
       handleSendMessage(e);
     }
@@ -238,9 +252,9 @@ function Message() {
     <div className="h-screen bg-gray-100 flex">
       {/* Mobile Overlay */}
       {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
-          onClick={() => setIsSidebarOpen(false)} 
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
@@ -293,6 +307,7 @@ function Message() {
               newMessage={newMessage}
               setNewMessage={setNewMessage}
               handleKeyPress={handleKeyPress}
+              isSending={isSending}
             />
           </>
         ) : (
