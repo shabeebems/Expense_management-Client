@@ -1,33 +1,47 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Plus, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 
 const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
-    activity: '',
+    activity: "",
     amount: 0,
-    type: 'income'
+    type: "income",
   });
+  const [activityError, setActivityError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.activity.trim() || formData.amount <= 0) return;
-    
+
+    if (!formData.activity.trim()) {
+      setActivityError("Description is required");
+      return;
+    }
+
+    if (formData.activity.trim().length < 3) {
+      setActivityError("Description must be at least 3 characters");
+      return;
+    }
+
+    if (formData.amount <= 0) return;
+
+    setActivityError("");
     setIsSubmitting(true);
+
     try {
       await onSubmit(formData);
-      setFormData({ activity: '', amount: 0, type: 'income' });
+      setFormData({ activity: "", amount: 0, type: "income" });
       onClose();
     } catch (error) {
-      console.error('Error adding transaction:', error);
+      console.error("Error adding transaction:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    setFormData({ activity: '', amount: 0, type: 'income' });
+    setFormData({ activity: "", amount: 0, type: "income" });
     onClose();
   };
 
@@ -58,7 +72,9 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold">Add Transaction</h2>
-                    <p className="text-blue-100 text-sm">Record income or expense</p>
+                    <p className="text-blue-100 text-sm">
+                      Record income or expense
+                    </p>
                   </div>
                 </div>
                 <button
@@ -82,11 +98,13 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, type: 'income' }))}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, type: "income" }))
+                    }
                     className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
-                      formData.type === 'income'
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      formData.type === "income"
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                        : "border-slate-200 text-slate-600 hover:border-slate-300"
                     }`}
                   >
                     <TrendingUp className="w-4 h-4" />
@@ -96,11 +114,13 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, type: 'expense' }))}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, type: "expense" }))
+                    }
                     className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
-                      formData.type === 'expense'
-                        ? 'border-red-500 bg-red-50 text-red-700'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      formData.type === "expense"
+                        ? "border-red-500 bg-red-50 text-red-700"
+                        : "border-slate-200 text-slate-600 hover:border-slate-300"
                     }`}
                   >
                     <TrendingDown className="w-4 h-4" />
@@ -110,32 +130,56 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
               </div>
 
               {/* Activity */}
+              {/* Activity */}
               <div className="mb-6">
-                <label htmlFor="activity" className="block text-sm font-medium text-slate-700 mb-2">
+                <label
+                  htmlFor="activity"
+                  className="block text-sm font-medium text-slate-700 mb-2"
+                >
                   Description
                 </label>
                 <input
                   id="activity"
                   type="text"
                   value={formData.activity}
-                  onChange={(e) => setFormData(prev => ({ ...prev, activity: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      activity: e.target.value,
+                    }))
+                  }
                   placeholder="e.g., Salary, Groceries, Rent"
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-slate-400"
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 transition-all duration-200 placeholder-slate-400 ${
+                    activityError
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
                   autoFocus
                   disabled={isSubmitting}
                 />
+                {activityError && (
+                  <p className="mt-2 text-sm text-red-600">{activityError}</p>
+                )}
               </div>
 
               {/* Amount */}
               <div className="mb-6">
-                <label htmlFor="amount" className="block text-sm font-medium text-slate-700 mb-2">
+                <label
+                  htmlFor="amount"
+                  className="block text-sm font-medium text-slate-700 mb-2"
+                >
                   Amount (₹)
                 </label>
                 <input
                   id="amount"
                   type="number"
-                  value={formData.amount || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                  value={formData.amount || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      amount: Number(e.target.value),
+                    }))
+                  }
                   placeholder="0.00"
                   min="0"
                   step="0.01"
@@ -157,11 +201,15 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  disabled={!formData.activity.trim() || formData.amount <= 0 || isSubmitting}
+                  disabled={
+                    !formData.activity.trim() ||
+                    formData.amount <= 0 ||
+                    isSubmitting
+                  }
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    formData.type === 'income'
-                      ? 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white'
-                      : 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white'
+                    formData.type === "income"
+                      ? "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white"
+                      : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white"
                   }`}
                 >
                   {isSubmitting ? (
@@ -169,7 +217,7 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
                   ) : (
                     <Plus className="w-4 h-4" />
                   )}
-                  {isSubmitting ? 'Adding...' : `Add ${formData.type}`}
+                  {isSubmitting ? "Adding..." : `Add ${formData.type}`}
                 </motion.button>
               </div>
             </form>
