@@ -10,6 +10,7 @@ import Protected from './Wrappers/Protected.jsx';
 import Home from './Pages/Protected/Home.jsx';
 import Transactions from './Pages/Protected/Transactions.jsx';
 import Message from './Pages/Protected/Message.jsx';
+import AllTransactions from './Pages/Protected/AllTransactions.jsx';
 
 function App() {
 
@@ -29,6 +30,8 @@ function App() {
       
       <Route path="/home" element={<Protected><Home /></Protected>} />
       <Route path="/transactions/:ledgerId" element={<Protected><Transactions /></Protected>} />
+      <Route path="/transactions/:ledgerId/all" element={<AllTransactions />} />
+
       <Route path="/messages" element={<Protected><Message /></Protected>} />
 
     </Routes>
