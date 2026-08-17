@@ -11,12 +11,12 @@ const CreateLedgerModal = ({ showModal, setShowModal, onSubmit }) => {
     e.preventDefault();
 
     if (!name.trim()) {
-      setNameError("Ledger name is required");
+      setNameError('Ledger name is required');
       return;
     }
 
     if (name.trim().length < 3) {
-      setNameError("Ledger name must be at least 3 characters");
+      setNameError('Ledger name must be at least 3 characters');
       return;
     }
 
@@ -47,86 +47,77 @@ const CreateLedgerModal = ({ showModal, setShowModal, onSubmit }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={handleClose}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 50 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 50 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 40, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+            className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/20 rounded-lg">
-                    <BookOpen className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold">Create New Ledger</h2>
-                    <p className="text-blue-100 text-sm">Start tracking your finances</p>
-                  </div>
+            <div className="flex items-center justify-between px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                  <BookOpen className="w-5 h-5" />
                 </div>
-                <button
-                  onClick={handleClose}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors duration-200"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">New ledger</h2>
+                  <p className="text-sm text-slate-500">Give this book a clear name</p>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
             </div>
 
-            {/* Content */}
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="mb-6">
-                <label htmlFor="ledgerName" className="block text-sm font-medium text-slate-700 mb-2">
-                  Ledger Name
-                </label>
-                <input
-                  id="ledgerName"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Personal Expenses, Business Account"
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 transition-all duration-200 ${
-                    nameError
-                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 focus:ring-blue-500 focus:border-blue-500'
-                  }`}
-                  autoFocus
-                  disabled={isSubmitting}
-                />
-                {nameError && (
-                  <p className="mt-2 text-sm text-red-600">{nameError}</p>
-                )}
-              </div>
+            <form onSubmit={handleSubmit} className="p-5 sm:p-6">
+              <label htmlFor="ledgerName" className="block text-sm font-medium text-slate-700 mb-2">
+                Ledger name
+              </label>
+              <input
+                id="ledgerName"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Personal, Shop, Travel"
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 transition-all ${
+                  nameError
+                    ? 'border-rose-500 focus:ring-rose-500'
+                    : 'border-slate-200 focus:ring-emerald-500 focus:border-emerald-500'
+                }`}
+                autoFocus
+                disabled={isSubmitting}
+              />
+              {nameError && <p className="mt-2 text-sm text-rose-600">{nameError}</p>}
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 mt-6">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 px-4 py-3 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl font-medium transition-all duration-200"
+                  className="flex-1 px-4 py-3 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl font-medium cursor-pointer"
                   disabled={isSubmitting}
                 >
                   Cancel
                 </button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <Plus className="w-4 h-4" />
                   )}
-                  {isSubmitting ? 'Creating...' : 'Create Ledger'}
-                </motion.button>
+                  {isSubmitting ? 'Creating...' : 'Create'}
+                </button>
               </div>
             </form>
           </motion.div>
