@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogOut, LayoutGrid, TrendingUp } from 'lucide-react';
 import axios from 'axios';
+import InstallAppButton from './InstallAppButton';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -70,6 +71,7 @@ const Navbar = () => {
             <LayoutGrid className="w-4 h-4" />
             Ledgers
           </Link>
+          <InstallAppButton variant="navbar" />
           <button
             type="button"
             onClick={logout}
@@ -108,6 +110,7 @@ const Navbar = () => {
                 <LayoutGrid className="w-4 h-4" />
                 Ledgers
               </Link>
+              <InstallAppButton variant="menu" />
               <button
                 type="button"
                 onClick={logout}
