@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Shield, Target, ArrowRight, Play } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import InstallAppButton from '../InstallAppButton';
 
 const FloatingCard = ({ children, delay = 0, className = "" }) => {
 
@@ -52,17 +53,20 @@ const Hero = () => {
           </motion.div>
 
           <motion.div 
-            className="hidden md:flex items-center space-x-8"
+            className="flex items-center gap-3"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <a href="#features" className="text-gray-600 hover:text-emerald-600 transition-colors">Features</a>
-            <a href="#how-it-works" className="text-gray-600 hover:text-emerald-600 transition-colors">How it Works</a>
-            <a href="#benefits" className="text-gray-600 hover:text-emerald-600 transition-colors">Benefits</a>
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-gray-600 hover:text-emerald-600 transition-colors">Features</a>
+              <a href="#how-it-works" className="text-gray-600 hover:text-emerald-600 transition-colors">How it Works</a>
+              <a href="#benefits" className="text-gray-600 hover:text-emerald-600 transition-colors">Benefits</a>
+            </div>
+            <InstallAppButton variant="hero" />
             <button 
               onClick={() => navigate('/login')}
-              className="bg-emerald-600 text-white px-6 py-2 rounded-full hover:bg-emerald-700 transition-colors cursor-pointer">
+              className="hidden md:inline-flex bg-emerald-600 text-white px-6 py-2 rounded-full hover:bg-emerald-700 transition-colors cursor-pointer">
                 Get Started
             </button>
           </motion.div>
