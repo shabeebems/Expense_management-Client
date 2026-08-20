@@ -1,15 +1,33 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, TrendingUp, TrendingDown } from 'lucide-react';
+import { X, Plus, Pencil, TrendingUp, TrendingDown } from 'lucide-react';
 
-const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
-  const [formData, setFormData] = useState({
-    activity: '',
-    amount: 0,
-    type: 'expense',
-  });
+const emptyForm = {
+  activity: '',
+  amount: 0,
+  type: 'expense',
+};
+
+const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) => {
+  const isEditing = Boolean(transaction);
+  const [formData, setFormData] = useState(emptyForm);
   const [activityError, setActivityError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(
+        transaction
+          ? {
+              activity: transaction.activity || '',
+              amount: transaction.amount || 0,
+              type: transaction.type || 'expense',
+            }
+          : emptyForm
+      );
+      setActivityError('');
+    }
+  }, [isOpen, transaction]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,18 +48,25 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
     setIsSubmitting(true);
 
     try {
-      await onSubmit(formData);
-      setFormData({ activity: '', amount: 0, type: 'expense' });
+      await onSubmit(
+        {
+          activity: formData.activity.trim(),
+          amount: formData.amount,
+          type: formData.type,
+        },
+        transaction
+      );
+      setFormData(emptyForm);
       onClose();
     } catch (error) {
-      console.error('Error adding transaction:', error);
+      console.error(isEditing ? 'Error updating transaction:' : 'Error adding transaction:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    setFormData({ activity: '', amount: 0, type: 'expense' });
+    setFormData(emptyForm);
     setActivityError('');
     onClose();
   };
@@ -66,8 +91,12 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
           >
             <div className="flex items-center justify-between px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Add transaction</h2>
-                <p className="text-sm text-slate-500">Record income or an expense</p>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  {isEditing ? 'Edit transaction' : 'Add transaction'}
+                </h2>
+                <p className="text-sm text-slate-500">
+                  {isEditing ? 'Update this income or expense' : 'Record income or an expense'}
+                </p>
               </div>
               <button
                 type="button"
@@ -172,10 +201,16 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit }) => {
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : isEditing ? (
+                    <Pencil className="w-4 h-4" />
                   ) : (
                     <Plus className="w-4 h-4" />
                   )}
-                  {isSubmitting ? 'Saving...' : `Add ${formData.type}`}
+                  {isSubmitting
+                    ? 'Saving...'
+                    : isEditing
+                      ? 'Save changes'
+                      : `Add ${formData.type}`}
                 </button>
               </div>
             </form>

@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, BookOpen } from 'lucide-react';
+import { X, Plus, Pencil, BookOpen } from 'lucide-react';
 
-const CreateLedgerModal = ({ showModal, setShowModal, onSubmit }) => {
+const CreateLedgerModal = ({ showModal, setShowModal, onSubmit, ledger = null }) => {
+  const isEditing = Boolean(ledger);
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (showModal) {
+      setName(ledger?.name || '');
+      setNameError('');
+    }
+  }, [showModal, ledger]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,11 +32,11 @@ const CreateLedgerModal = ({ showModal, setShowModal, onSubmit }) => {
     setIsSubmitting(true);
 
     try {
-      await onSubmit(name.trim());
+      await onSubmit(name.trim(), ledger);
       setName('');
       setShowModal(false);
     } catch (error) {
-      console.error('Error creating ledger:', error);
+      console.error(isEditing ? 'Error updating ledger:' : 'Error creating ledger:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -64,8 +72,12 @@ const CreateLedgerModal = ({ showModal, setShowModal, onSubmit }) => {
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">New ledger</h2>
-                  <p className="text-sm text-slate-500">Give this book a clear name</p>
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    {isEditing ? 'Edit ledger' : 'New ledger'}
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    {isEditing ? 'Update the name of this book' : 'Give this book a clear name'}
+                  </p>
                 </div>
               </div>
               <button
@@ -113,10 +125,12 @@ const CreateLedgerModal = ({ showModal, setShowModal, onSubmit }) => {
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : isEditing ? (
+                    <Pencil className="w-4 h-4" />
                   ) : (
                     <Plus className="w-4 h-4" />
                   )}
-                  {isSubmitting ? 'Creating...' : 'Create'}
+                  {isSubmitting ? (isEditing ? 'Saving...' : 'Creating...') : isEditing ? 'Save' : 'Create'}
                 </button>
               </div>
             </form>
