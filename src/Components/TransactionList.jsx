@@ -1,7 +1,7 @@
-import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Pencil, Trash2 } from 'lucide-react';
 import { formatCurrency, formatTime, groupByDate } from '../utils/format';
 
-const TransactionList = ({ transactions }) => {
+const TransactionList = ({ transactions, onEdit, onDelete }) => {
   const groups = groupByDate(transactions);
 
   return (
@@ -50,6 +50,31 @@ const TransactionList = ({ transactions }) => {
                     {isIncome ? '+' : '−'}
                     {formatCurrency(transaction.amount)}
                   </p>
+
+                  {(onEdit || onDelete) && (
+                    <div className="shrink-0 flex items-center">
+                      {onEdit && (
+                        <button
+                          type="button"
+                          onClick={() => onEdit(transaction)}
+                          aria-label={`Edit ${transaction.activity}`}
+                          className="p-2 rounded-lg text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete(transaction)}
+                          aria-label={`Delete ${transaction.activity}`}
+                          className="p-2 rounded-lg text-slate-400 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

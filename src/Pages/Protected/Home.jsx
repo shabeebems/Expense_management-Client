@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import {
   BookOpen,
   Plus,
+  Pencil,
   Search,
   TrendingUp,
   TrendingDown,
@@ -20,9 +21,26 @@ import { formatCurrency, formatDate } from '../../utils/format';
 const Home = () => {
   const [ledgers, setLedgers] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [editingLedger, setEditingLedger] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
+
+  const openCreateModal = () => {
+    setEditingLedger(null);
+    setShowModal(true);
+  };
+
+  const openEditModal = (event, ledger) => {
+    event.stopPropagation();
+    setEditingLedger(ledger);
+    setShowModal(true);
+  };
+
+  const closeModal = (open) => {
+    setShowModal(open);
+    if (!open) setEditingLedger(null);
+  };
 
   const fetchLedgers = async () => {
     try {
@@ -43,7 +61,19 @@ const Home = () => {
     fetchLedgers();
   }, []);
 
-  const handleSubmit = async (name) => {
+  const handleSubmit = async (name, ledger) => {
+    if (ledger) {
+      const response = await axios.put(
+        `${import.meta.env.VITE_SERVER_API_URL}/api/ledger/${ledger._id}`,
+        { newName: name },
+        { withCredentials: true }
+      );
+      setLedgers((prev) =>
+        prev.map((item) => (item._id === ledger._id ? response.data : item))
+      );
+      return;
+    }
+
     const response = await axios.post(
       `${import.meta.env.VITE_SERVER_API_URL}/api/ledger`,
       { newName: name },
@@ -81,7 +111,7 @@ const Home = () => {
         </div>
         <button
           type="button"
-          onClick={() => setShowModal(true)}
+          onClick={openCreateModal}
           className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -148,7 +178,7 @@ const Home = () => {
                 action={
                   <button
                     type="button"
-                    onClick={() => setShowModal(true)}
+                    onClick={openCreateModal}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
@@ -173,9 +203,8 @@ const Home = () => {
                 const incomeShare = totalFlow ? ((ledger.totalIncome || 0) / totalFlow) * 100 : 50;
 
                 return (
-                  <motion.button
+                  <motion.article
                     key={ledger._id}
-                    type="button"
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.04 }}
@@ -196,7 +225,17 @@ const Home = () => {
                           </p>
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 shrink-0 mt-1" />
+                      <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                        <button
+                          type="button"
+                          onClick={(event) => openEditModal(event, ledger)}
+                          aria-label={`Edit ${ledger.name}`}
+                          className="p-2 rounded-lg text-slate-300 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500" />
+                      </div>
                     </div>
 
                     <div className="mt-5 grid grid-cols-2 gap-3">
@@ -228,7 +267,7 @@ const Home = () => {
                         />
                       </div>
                     </div>
-                  </motion.button>
+                  </motion.article>
                 );
               })}
             </div>
@@ -238,7 +277,8 @@ const Home = () => {
 
       <CreateLedgerModal
         showModal={showModal}
-        setShowModal={setShowModal}
+        setShowModal={closeModal}
+        ledger={editingLedger}
         onSubmit={handleSubmit}
       />
     </AppShell>

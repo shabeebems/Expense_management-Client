@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Calendar,
   Plus,
+  Pencil,
   Search,
   TrendingDown,
   TrendingUp,
@@ -13,6 +14,8 @@ import {
 } from 'lucide-react';
 import AppShell from '../../Components/AppShell';
 import AddTransactionModal from '../../Components/AddTransactionModal';
+import CreateLedgerModal from '../../Components/CreateLedgerModal';
+import ConfirmDeleteModal from '../../Components/ConfirmDeleteModal';
 import StatCard from '../../Components/StatCard';
 import EmptyState from '../../Components/EmptyState';
 import TransactionList from '../../Components/TransactionList';
@@ -32,6 +35,9 @@ const Ledger = () => {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showLedgerModal, setShowLedgerModal] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [deletingTransaction, setDeletingTransaction] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -60,13 +66,57 @@ const Ledger = () => {
     loadData();
   }, [ledgerId]);
 
-  const handleAddTransaction = async (data) => {
-    await axios.post(
-      `${import.meta.env.VITE_SERVER_API_URL}/api/transactions/${ledgerId}`,
-      data,
+  const openCreateTransaction = () => {
+    setEditingTransaction(null);
+    setShowModal(true);
+  };
+
+  const openEditTransaction = (transaction) => {
+    setEditingTransaction(transaction);
+    setShowModal(true);
+  };
+
+  const closeTransactionModal = () => {
+    setShowModal(false);
+    setEditingTransaction(null);
+  };
+
+  const closeDeleteModal = () => {
+    setDeletingTransaction(null);
+  };
+
+  const handleDeleteTransaction = async (transaction) => {
+    await axios.delete(
+      `${import.meta.env.VITE_SERVER_API_URL}/api/transactions/${ledgerId}/${transaction._id}`,
       { withCredentials: true }
     );
-    setShowModal(false);
+    await loadData();
+  };
+
+  const handleLedgerSubmit = async (name) => {
+    const response = await axios.put(
+      `${import.meta.env.VITE_SERVER_API_URL}/api/ledger/${ledgerId}`,
+      { newName: name },
+      { withCredentials: true }
+    );
+    setLedger(response.data);
+  };
+
+  const handleTransactionSubmit = async (data, transaction) => {
+    if (transaction) {
+      await axios.put(
+        `${import.meta.env.VITE_SERVER_API_URL}/api/transactions/${ledgerId}/${transaction._id}`,
+        data,
+        { withCredentials: true }
+      );
+    } else {
+      await axios.post(
+        `${import.meta.env.VITE_SERVER_API_URL}/api/transactions/${ledgerId}`,
+        data,
+        { withCredentials: true }
+      );
+    }
+    closeTransactionModal();
     await loadData();
   };
 
@@ -138,9 +188,19 @@ const Ledger = () => {
 
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-8">
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight truncate">
-            {ledger.name}
-          </h1>
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight truncate">
+              {ledger.name}
+            </h1>
+            <button
+              type="button"
+              onClick={() => setShowLedgerModal(true)}
+              aria-label="Edit ledger"
+              className="p-2 rounded-lg text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer shrink-0"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+          </div>
           <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
             <Calendar className="w-4 h-4" />
             Created {formatDate(ledger.createdAt, { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -148,7 +208,7 @@ const Ledger = () => {
         </div>
         <button
           type="button"
-          onClick={() => setShowModal(true)}
+          onClick={openCreateTransaction}
           className="hidden sm:inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -238,7 +298,7 @@ const Ledger = () => {
               action={
                 <button
                   type="button"
-                  onClick={() => setShowModal(true)}
+                  onClick={openCreateTransaction}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
@@ -253,7 +313,11 @@ const Ledger = () => {
               description="Try another search term or filter."
             />
           ) : (
-            <TransactionList transactions={filteredTransactions} />
+            <TransactionList
+              transactions={filteredTransactions}
+              onEdit={openEditTransaction}
+              onDelete={setDeletingTransaction}
+            />
           )}
         </div>
       </section>
@@ -261,7 +325,7 @@ const Ledger = () => {
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 p-4 bg-white/95 backdrop-blur-md border-t border-slate-100">
         <button
           type="button"
-          onClick={() => setShowModal(true)}
+          onClick={openCreateTransaction}
           className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -271,8 +335,21 @@ const Ledger = () => {
 
       <AddTransactionModal
         isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onSubmit={handleAddTransaction}
+        onClose={closeTransactionModal}
+        onSubmit={handleTransactionSubmit}
+        transaction={editingTransaction}
+      />
+      <CreateLedgerModal
+        showModal={showLedgerModal}
+        setShowModal={setShowLedgerModal}
+        ledger={ledger}
+        onSubmit={handleLedgerSubmit}
+      />
+      <ConfirmDeleteModal
+        isOpen={Boolean(deletingTransaction)}
+        transaction={deletingTransaction}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeleteTransaction}
       />
     </AppShell>
   );
