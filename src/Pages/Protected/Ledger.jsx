@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Wallet,
   Receipt,
+  Download,
 } from 'lucide-react';
 import AppShell from '../../Components/AppShell';
 import AddTransactionModal from '../../Components/AddTransactionModal';
@@ -20,6 +21,7 @@ import StatCard from '../../Components/StatCard';
 import EmptyState from '../../Components/EmptyState';
 import TransactionList from '../../Components/TransactionList';
 import { formatCurrency, formatDate } from '../../utils/format';
+import { downloadLedgerPdf } from '../../utils/downloadLedgerPdf';
 
 const filters = [
   { key: 'all', label: 'All' },
@@ -38,6 +40,7 @@ const Ledger = () => {
   const [showLedgerModal, setShowLedgerModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [deletingTransaction, setDeletingTransaction] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -118,6 +121,20 @@ const Ledger = () => {
     }
     closeTransactionModal();
     await loadData();
+  };
+
+  const handleDownloadPdf = () => {
+    if (!ledger || transactions.length === 0 || isExporting) return;
+    setIsExporting(true);
+    window.setTimeout(() => {
+      try {
+        downloadLedgerPdf({ ledger, transactions });
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+      } finally {
+        setIsExporting(false);
+      }
+    }, 50);
   };
 
   const filteredTransactions = useMemo(() => {
@@ -206,14 +223,29 @@ const Ledger = () => {
             Created {formatDate(ledger.createdAt, { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openCreateTransaction}
-          className="hidden sm:inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          Add transaction
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            disabled={transactions.length === 0 || isExporting}
+            className="hidden sm:inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-full shadow-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isExporting ? (
+              <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {isExporting ? 'Preparing...' : 'Download PDF'}
+          </button>
+          <button
+            type="button"
+            onClick={openCreateTransaction}
+            className="hidden sm:inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Add transaction
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
@@ -251,9 +283,24 @@ const Ledger = () => {
         <div className="p-4 sm:p-5 border-b border-slate-100 space-y-3">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base sm:text-lg font-semibold text-slate-900">Transactions</h2>
-            <span className="text-xs text-slate-400">
-              {filteredTransactions.length} of {transactions.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400">
+                {filteredTransactions.length} of {transactions.length}
+              </span>
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={transactions.length === 0 || isExporting}
+                aria-label="Download PDF statement"
+                className="sm:hidden inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isExporting ? (
+                  <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="relative">
