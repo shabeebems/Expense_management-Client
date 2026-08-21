@@ -1,5 +1,5 @@
 import { ArrowDownRight, ArrowUpRight, Pencil, Trash2 } from 'lucide-react';
-import { formatCurrency, formatTime, groupByDate } from '../utils/format';
+import { formatCurrency, groupByDate } from '../utils/format';
 
 const TransactionList = ({ transactions, onEdit, onDelete }) => {
   const groups = groupByDate(transactions);
@@ -38,7 +38,7 @@ const TransactionList = ({ transactions, onEdit, onDelete }) => {
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-slate-800 truncate">{transaction.activity}</p>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      {formatTime(transaction.createdAt)} · {isIncome ? 'Income' : 'Expense'}
+                      {isIncome ? 'Income' : 'Expense'}
                     </p>
                   </div>
 
