@@ -1,31 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Pencil, TrendingUp, TrendingDown } from 'lucide-react';
+import { todayDateInput, toDateInput, isFutureDateInput } from '../utils/format';
 
-const emptyForm = {
+const emptyForm = () => ({
   activity: '',
   amount: 0,
   type: 'expense',
-};
+  date: todayDateInput(),
+});
 
 const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) => {
   const isEditing = Boolean(transaction);
   const [formData, setFormData] = useState(emptyForm);
+  const [today, setToday] = useState(todayDateInput());
   const [activityError, setActivityError] = useState('');
+  const [dateError, setDateError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
+      const liveToday = todayDateInput();
+      setToday(liveToday);
+      const existingDate = transaction ? toDateInput(transaction.date) : liveToday;
       setFormData(
         transaction
           ? {
               activity: transaction.activity || '',
               amount: transaction.amount || 0,
               type: transaction.type || 'expense',
+              date: existingDate > liveToday ? liveToday : existingDate,
             }
-          : emptyForm
+          : emptyForm()
       );
       setActivityError('');
+      setDateError('');
     }
   }, [isOpen, transaction]);
 
@@ -42,9 +51,20 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
       return;
     }
 
+    if (!formData.date) {
+      setDateError('Date is required');
+      return;
+    }
+
+    if (isFutureDateInput(formData.date)) {
+      setDateError('Date cannot be after today');
+      return;
+    }
+
     if (formData.amount <= 0) return;
 
     setActivityError('');
+    setDateError('');
     setIsSubmitting(true);
 
     try {
@@ -53,10 +73,11 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
           activity: formData.activity.trim(),
           amount: formData.amount,
           type: formData.type,
+          date: formData.date,
         },
         transaction
       );
-      setFormData(emptyForm);
+      setFormData(emptyForm());
       onClose();
     } catch (error) {
       console.error(isEditing ? 'Error updating transaction:' : 'Error adding transaction:', error);
@@ -66,8 +87,9 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
   };
 
   const handleClose = () => {
-    setFormData(emptyForm);
+    setFormData(emptyForm());
     setActivityError('');
+    setDateError('');
     onClose();
   };
 
@@ -160,6 +182,29 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
               />
               {activityError && <p className="-mt-2 mb-4 text-sm text-rose-600">{activityError}</p>}
 
+              <label htmlFor="date" className="block text-sm font-medium text-slate-700 mb-2">
+                Date
+              </label>
+              <input
+                id="date"
+                type="date"
+                value={formData.date}
+                max={today}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    date: e.target.value,
+                  }))
+                }
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 mb-4 ${
+                  dateError
+                    ? 'border-rose-500 focus:ring-rose-500'
+                    : 'border-slate-200 focus:ring-emerald-500 focus:border-emerald-500'
+                }`}
+                disabled={isSubmitting}
+              />
+              {dateError && <p className="-mt-2 mb-4 text-sm text-rose-600">{dateError}</p>}
+
               <label htmlFor="amount" className="block text-sm font-medium text-slate-700 mb-2">
                 Amount (₹)
               </label>
@@ -192,7 +237,7 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
                 </button>
                 <button
                   type="submit"
-                  disabled={!formData.activity.trim() || formData.amount <= 0 || isSubmitting}
+                  disabled={!formData.activity.trim() || !formData.date || formData.amount <= 0 || isSubmitting}
                   className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium disabled:opacity-50 cursor-pointer ${
                     formData.type === 'income'
                       ? 'bg-emerald-600 hover:bg-emerald-700 text-white'

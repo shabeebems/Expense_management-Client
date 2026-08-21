@@ -31,21 +31,6 @@ const formatLongDate = (date) =>
     year: 'numeric',
   });
 
-const formatLongDateTime = (date) =>
-  new Date(date).toLocaleString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-const formatTime = (date) =>
-  new Date(date).toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
 const slug = (value) =>
   String(value || 'ledger')
     .replace(/[^\w\s-]/g, '')
@@ -63,20 +48,23 @@ const drawRounded = (doc, x, y, w, h, color) => {
 };
 
 export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
-  const chronological = [...transactions].sort(
-    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  const byDateAsc = [...transactions].sort(
+    (a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt)
   );
 
-  const incomeTotal = chronological
+  const incomeTotal = byDateAsc
     .filter((item) => item.type === 'income')
     .reduce((sum, item) => sum + Number(item.amount || 0), 0);
-  const expenseTotal = chronological
+  const expenseTotal = byDateAsc
     .filter((item) => item.type === 'expense')
     .reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const net = incomeTotal - expenseTotal;
   const generatedAt = new Date();
-  const periodStart = chronological[0]?.createdAt || ledger.createdAt || generatedAt;
-  const periodEnd = chronological[chronological.length - 1]?.createdAt || generatedAt;
+  const periodStart = byDateAsc[0]?.date || byDateAsc[0]?.createdAt || generatedAt;
+  const periodEnd =
+    byDateAsc[byDateAsc.length - 1]?.date ||
+    byDateAsc[byDateAsc.length - 1]?.createdAt ||
+    generatedAt;
   const documentNo = `PF-${String(ledger._id || 'LEDGER').slice(-8).toUpperCase()}-${generatedAt
     .toISOString()
     .slice(0, 10)
@@ -122,7 +110,7 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
   doc.setFontSize(8.5);
   setColor(doc, COLORS.muted);
   doc.text(
-    `Prepared for internal records  |  Generated ${formatLongDateTime(generatedAt)}`,
+    `Prepared for internal records  |  Generated ${formatLongDate(generatedAt)}`,
     MARGIN.left,
     y
   );
@@ -130,33 +118,30 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
 
   const meta = [
     ['Document No.', documentNo],
-    ['Ledger ID', String(ledger._id || '—')],
     ['Statement period', `${formatLongDate(periodStart)}  –  ${formatLongDate(periodEnd)}`],
     ['Ledger opened', formatLongDate(ledger.createdAt || generatedAt)],
   ];
 
-  const metaCol = contentWidth / 2;
+  const metaCol = contentWidth / 3;
   meta.forEach((row, index) => {
-    const col = index % 2;
-    const rowIndex = Math.floor(index / 2);
-    const x = MARGIN.left + col * metaCol;
-    const rowY = y + rowIndex * 9;
+    const x = MARGIN.left + index * metaCol;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     setColor(doc, COLORS.faint);
-    doc.text(row[0].toUpperCase(), x, rowY);
+    doc.text(row[0].toUpperCase(), x, y);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     setColor(doc, COLORS.ink);
-    doc.text(row[1], x, rowY + 4.2);
+    const valueLines = doc.splitTextToSize(row[1], metaCol - 4);
+    doc.text(valueLines, x, y + 4.2);
   });
-  y += 22;
+  y += 16;
 
   const cards = [
     { label: 'Total income', value: formatInr(incomeTotal), color: COLORS.income },
     { label: 'Total expenses', value: formatInr(expenseTotal), color: COLORS.expense },
     { label: 'Net balance', value: formatInr(net), color: net >= 0 ? COLORS.income : COLORS.expense },
-    { label: 'Transactions', value: String(chronological.length), color: COLORS.ink },
+    { label: 'Transactions', value: String(byDateAsc.length), color: COLORS.ink },
   ];
   const gap = 3;
   const cardW = (contentWidth - gap * 3) / 4;
@@ -184,33 +169,35 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
   doc.setFontSize(8);
   setColor(doc, COLORS.muted);
   doc.text(
-    'Listed in chronological order with a running balance after each entry.',
+    'Listed newest first by date, with the running balance after each entry.',
     MARGIN.left,
     y + 5
   );
 
   let running = 0;
-  const tableBody = chronological.map((transaction, index) => {
+  const withBalance = byDateAsc.map((transaction) => {
     const amount = Number(transaction.amount || 0);
     running += transaction.type === 'income' ? amount : -amount;
-    return [
-      String(index + 1).padStart(2, '0'),
-      formatLongDate(transaction.createdAt),
-      formatTime(transaction.createdAt),
-      transaction.activity || '—',
-      transaction.type === 'income' ? 'Income' : 'Expense',
-      formatInr(amount),
-      formatInr(running),
-      String(transaction._id || '').slice(-8).toUpperCase() || '—',
-    ];
+    return { transaction, amount, balance: running };
   });
+  const newestFirst = [...withBalance].reverse();
+
+  const tableBody = newestFirst.map((row, index) => [
+    String(index + 1).padStart(2, '0'),
+    formatLongDate(row.transaction.date || row.transaction.createdAt),
+    row.transaction.activity || '—',
+    row.transaction.type === 'income' ? 'Income' : 'Expense',
+    formatInr(row.amount),
+    formatInr(row.balance),
+    String(row.transaction._id || '').slice(-8).toUpperCase() || '—',
+  ]);
 
   autoTable(doc, {
     startY: y + 8,
-    head: [['#', 'Date', 'Time', 'Description', 'Type', 'Amount (INR)', 'Balance', 'Ref.']],
+    head: [['#', 'Date', 'Description', 'Type', 'Amount (INR)', 'Balance', 'Ref.']],
     body: tableBody.length
       ? tableBody
-      : [['—', '—', '—', 'No transactions recorded in this ledger.', '—', '—', '—', '—']],
+      : [['—', '—', 'No transactions recorded in this ledger.', '—', '—', '—', '—']],
     theme: 'grid',
     styles: {
       font: 'helvetica',
@@ -233,22 +220,21 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
     alternateRowStyles: { fillColor: [252, 253, 254] },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center', textColor: COLORS.muted },
-      1: { cellWidth: 22, halign: 'left' },
-      2: { cellWidth: 16, halign: 'center' },
-      3: { cellWidth: 48, halign: 'left' },
-      4: { cellWidth: 18, halign: 'center' },
-      5: { cellWidth: 26, halign: 'right', fontStyle: 'bold' },
-      6: { cellWidth: 26, halign: 'right' },
-      7: { cellWidth: 16, halign: 'center', fontSize: 6.5, textColor: COLORS.faint },
+      1: { cellWidth: 28, halign: 'left' },
+      2: { cellWidth: 54, halign: 'left' },
+      3: { cellWidth: 18, halign: 'center' },
+      4: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
+      5: { cellWidth: 28, halign: 'right' },
+      6: { cellWidth: 16, halign: 'center', fontSize: 6.5, textColor: COLORS.faint },
     },
     didParseCell: (data) => {
       if (data.section !== 'body' || !tableBody.length) return;
-      const type = data.row.raw[4];
-      if (data.column.index === 4) {
+      const type = data.row.raw[3];
+      if (data.column.index === 3) {
         data.cell.styles.textColor = type === 'Income' ? COLORS.income : COLORS.expense;
         data.cell.styles.fontStyle = 'bold';
       }
-      if (data.column.index === 5) {
+      if (data.column.index === 4) {
         data.cell.styles.textColor = type === 'Income' ? COLORS.income : COLORS.expense;
       }
     },
