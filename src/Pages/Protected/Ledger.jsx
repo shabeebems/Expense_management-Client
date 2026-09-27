@@ -7,6 +7,7 @@ import {
   Plus,
   Pencil,
   Search,
+  SlidersHorizontal,
   TrendingDown,
   TrendingUp,
   Wallet,
@@ -20,14 +21,9 @@ import ConfirmDeleteModal from '../../Components/ConfirmDeleteModal';
 import StatCard from '../../Components/StatCard';
 import EmptyState from '../../Components/EmptyState';
 import TransactionList from '../../Components/TransactionList';
+import TransactionFilterModal from '../../Components/TransactionFilterModal';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { downloadLedgerPdf } from '../../utils/downloadLedgerPdf';
-
-const filters = [
-  { key: 'all', label: 'All' },
-  { key: 'income', label: 'Income' },
-  { key: 'expense', label: 'Expenses' },
-];
 
 const Ledger = () => {
   const { ledgerId } = useParams();
@@ -42,20 +38,27 @@ const Ledger = () => {
   const [deletingTransaction, setDeletingTransaction] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   const loadData = async () => {
     try {
-      const [ledgerRes, txRes] = await Promise.all([
+      const [ledgerRes, txRes, categoryRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/ledger/${ledgerId}`, {
           withCredentials: true,
         }),
         axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/transactions/${ledgerId}`, {
           withCredentials: true,
         }),
+        axios.get(`${import.meta.env.VITE_SERVER_API_URL}/api/categories/${ledgerId}`, {
+          withCredentials: true,
+        }),
       ]);
       setLedger(ledgerRes.data);
       setTransactions(txRes.data || []);
+      setCategories(categoryRes.data || []);
     } catch (error) {
       console.error('Error loading ledger:', error);
       setLedger(null);
@@ -66,6 +69,9 @@ const Ledger = () => {
 
   useEffect(() => {
     setIsLoading(true);
+    setActiveFilter('all');
+    setSelectedCategories([]);
+    setShowFilters(false);
     loadData();
   }, [ledgerId]);
 
@@ -123,6 +129,18 @@ const Ledger = () => {
     await loadData();
   };
 
+  const handleCreateCategory = async (name) => {
+    const response = await axios.post(
+      `${import.meta.env.VITE_SERVER_API_URL}/api/categories/${ledgerId}`,
+      { name },
+      { withCredentials: true }
+    );
+    setCategories((current) =>
+      [...current, response.data].sort((a, b) => a.name.localeCompare(b.name))
+    );
+    return response.data;
+  };
+
   const handleDownloadPdf = () => {
     if (!ledger || transactions.length === 0 || isExporting) return;
     setIsExporting(true);
@@ -138,22 +156,49 @@ const Ledger = () => {
   };
 
   const filteredTransactions = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
     return transactions.filter((transaction) => {
       const matchesType = activeFilter === 'all' || transaction.type === activeFilter;
-      const matchesSearch = transaction.activity
-        .toLowerCase()
-        .includes(searchTerm.trim().toLowerCase());
-      return matchesType && matchesSearch;
+      const categoryId = String(transaction.category?._id || transaction.categoryId || '');
+      const matchesCategory =
+        selectedCategories.length === 0 ||
+        selectedCategories.some((key) => (key === 'none' ? !categoryId : categoryId === key));
+      const categoryName = transaction.category?.name || '';
+      const matchesSearch =
+        !query ||
+        transaction.activity.toLowerCase().includes(query) ||
+        categoryName.toLowerCase().includes(query);
+      return matchesType && matchesCategory && matchesSearch;
     });
-  }, [transactions, activeFilter, searchTerm]);
+  }, [transactions, activeFilter, selectedCategories, searchTerm]);
 
-  const totals = {
-    income: ledger?.totalIncome || 0,
-    expense: ledger?.totalExpense || 0,
+  const toggleCategory = (key) => {
+    setSelectedCategories((current) =>
+      current.includes(key) ? current.filter((item) => item !== key) : [...current, key]
+    );
   };
+
+  const clearFilters = () => {
+    setActiveFilter('all');
+    setSelectedCategories([]);
+  };
+
+  const activeFilterCount = (activeFilter === 'all' ? 0 : 1) + selectedCategories.length;
+
+  const totals = useMemo(() => {
+    return filteredTransactions.reduce(
+      (sum, transaction) => {
+        const amount = Number(transaction.amount) || 0;
+        if (transaction.type === 'income') sum.income += amount;
+        else sum.expense += amount;
+        return sum;
+      },
+      { income: 0, expense: 0 }
+    );
+  }, [filteredTransactions]);
   const net = totals.income - totals.expense;
   const flow = totals.income + totals.expense;
-  const incomeShare = flow ? (totals.income / flow) * 100 : 50;
+  const incomeShare = flow ? (totals.income / flow) * 100 : 0;
 
   if (isLoading) {
     return (
@@ -274,7 +319,7 @@ const Ledger = () => {
           <span>Income vs expenses</span>
           <span>{flow ? `${Math.round(incomeShare)}% income` : 'No activity yet'}</span>
         </div>
-        <div className="h-2 rounded-full bg-rose-100 overflow-hidden">
+        <div className={`h-2 rounded-full overflow-hidden ${flow ? 'bg-rose-100' : 'bg-slate-100'}`}>
           <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${incomeShare}%` }} />
         </div>
       </div>
@@ -303,36 +348,34 @@ const Ledger = () => {
             </div>
           </div>
 
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by description..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white"
-            />
-          </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {filters.map((filter) => (
-              <button
-                key={filter.key}
-                type="button"
-                onClick={() => setActiveFilter(filter.key)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                  activeFilter === filter.key
-                    ? filter.key === 'income'
-                      ? 'bg-emerald-600 text-white'
-                      : filter.key === 'expense'
-                        ? 'bg-rose-600 text-white'
-                        : 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {filter.label}
-              </button>
-            ))}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by description or category..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowFilters(true)}
+              aria-label="Filter transactions"
+              className={`relative shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-xl border transition-colors cursor-pointer ${
+                activeFilterCount > 0
+                  ? 'border-slate-900 bg-slate-900 text-white'
+                  : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-emerald-600 text-[10px] font-semibold text-white flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -380,11 +423,24 @@ const Ledger = () => {
         </button>
       </div>
 
+      <TransactionFilterModal
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        typeFilter={activeFilter}
+        onTypeChange={setActiveFilter}
+        categories={categories}
+        selectedCategories={selectedCategories}
+        onToggleCategory={toggleCategory}
+        onClearCategories={() => setSelectedCategories([])}
+        onClear={clearFilters}
+      />
       <AddTransactionModal
         isOpen={showModal}
         onClose={closeTransactionModal}
         onSubmit={handleTransactionSubmit}
         transaction={editingTransaction}
+        categories={categories}
+        onCreateCategory={handleCreateCategory}
       />
       <CreateLedgerModal
         showModal={showLedgerModal}

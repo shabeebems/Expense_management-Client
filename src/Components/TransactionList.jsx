@@ -39,7 +39,17 @@ const TransactionList = ({ transactions, onEdit, onDelete }) => {
                     <p className="font-medium text-slate-800 truncate">{transaction.activity}</p>
                     <p className="text-xs text-slate-400 mt-0.5">
                       {isIncome ? 'Income' : 'Expense'}
+                      {transaction.category?.name ? ` · ${transaction.category.name}` : ''}
                     </p>
+                    {!transaction.category?.name && onEdit && (
+                      <button
+                        type="button"
+                        onClick={() => onEdit(transaction)}
+                        className="mt-1 text-xs font-medium text-emerald-700 hover:text-emerald-800 cursor-pointer"
+                      >
+                        Assign category
+                      </button>
+                    )}
                   </div>
 
                   <p

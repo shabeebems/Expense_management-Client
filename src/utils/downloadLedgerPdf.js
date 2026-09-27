@@ -186,6 +186,7 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
     String(index + 1).padStart(2, '0'),
     formatLongDate(row.transaction.date || row.transaction.createdAt),
     row.transaction.activity || '—',
+    row.transaction.category?.name || '—',
     row.transaction.type === 'income' ? 'Income' : 'Expense',
     formatInr(row.amount),
     formatInr(row.balance),
@@ -194,10 +195,10 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
 
   autoTable(doc, {
     startY: y + 8,
-    head: [['#', 'Date', 'Description', 'Type', 'Amount (INR)', 'Balance', 'Ref.']],
+    head: [['#', 'Date', 'Description', 'Category', 'Type', 'Amount (INR)', 'Balance', 'Ref.']],
     body: tableBody.length
       ? tableBody
-      : [['—', '—', 'No transactions recorded in this ledger.', '—', '—', '—', '—']],
+      : [['—', '—', 'No transactions recorded in this ledger.', '—', '—', '—', '—', '—']],
     theme: 'grid',
     styles: {
       font: 'helvetica',
@@ -219,22 +220,23 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
     },
     alternateRowStyles: { fillColor: [252, 253, 254] },
     columnStyles: {
-      0: { cellWidth: 10, halign: 'center', textColor: COLORS.muted },
-      1: { cellWidth: 28, halign: 'left' },
-      2: { cellWidth: 54, halign: 'left' },
-      3: { cellWidth: 18, halign: 'center' },
-      4: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
-      5: { cellWidth: 28, halign: 'right' },
-      6: { cellWidth: 16, halign: 'center', fontSize: 6.5, textColor: COLORS.faint },
+      0: { cellWidth: 9, halign: 'center', textColor: COLORS.muted },
+      1: { cellWidth: 24, halign: 'left' },
+      2: { cellWidth: 38, halign: 'left' },
+      3: { cellWidth: 26, halign: 'left' },
+      4: { cellWidth: 18, halign: 'center' },
+      5: { cellWidth: 26, halign: 'right', fontStyle: 'bold' },
+      6: { cellWidth: 26, halign: 'right' },
+      7: { cellWidth: 15, halign: 'center', fontSize: 6.5, textColor: COLORS.faint },
     },
     didParseCell: (data) => {
       if (data.section !== 'body' || !tableBody.length) return;
-      const type = data.row.raw[3];
-      if (data.column.index === 3) {
+      const type = data.row.raw[4];
+      if (data.column.index === 4) {
         data.cell.styles.textColor = type === 'Income' ? COLORS.income : COLORS.expense;
         data.cell.styles.fontStyle = 'bold';
       }
-      if (data.column.index === 4) {
+      if (data.column.index === 5) {
         data.cell.styles.textColor = type === 'Income' ? COLORS.income : COLORS.expense;
       }
     },

@@ -8,15 +8,35 @@ const emptyForm = () => ({
   amount: 0,
   type: 'expense',
   date: todayDateInput(),
+  categoryId: '',
 });
 
-const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) => {
+const categoryIdOf = (transaction) => {
+  if (!transaction) return '';
+  if (transaction.category?._id) return String(transaction.category._id);
+  if (!transaction.categoryId) return '';
+  if (typeof transaction.categoryId === 'object') return String(transaction.categoryId._id || '');
+  return String(transaction.categoryId);
+};
+
+const AddTransactionModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  transaction = null,
+  categories = [],
+  onCreateCategory,
+}) => {
   const isEditing = Boolean(transaction);
   const [formData, setFormData] = useState(emptyForm);
   const [today, setToday] = useState(todayDateInput());
   const [activityError, setActivityError] = useState('');
   const [dateError, setDateError] = useState('');
+  const [categoryError, setCategoryError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -30,11 +50,15 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
               amount: transaction.amount || 0,
               type: transaction.type || 'expense',
               date: existingDate > liveToday ? liveToday : existingDate,
+              categoryId: categoryIdOf(transaction),
             }
           : emptyForm()
       );
       setActivityError('');
       setDateError('');
+      setCategoryError('');
+      setShowNewCategory(false);
+      setNewCategoryName('');
     }
   }, [isOpen, transaction]);
 
@@ -74,6 +98,7 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
           amount: formData.amount,
           type: formData.type,
           date: formData.date,
+          categoryId: formData.categoryId || null,
         },
         transaction
       );
@@ -90,7 +115,37 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
     setFormData(emptyForm());
     setActivityError('');
     setDateError('');
+    setCategoryError('');
+    setShowNewCategory(false);
+    setNewCategoryName('');
     onClose();
+  };
+
+  const selectType = (type) => {
+    setFormData((prev) => ({ ...prev, type }));
+    setCategoryError('');
+  };
+
+  const handleCreateCategory = async () => {
+    const name = newCategoryName.trim();
+    if (name.length < 2) {
+      setCategoryError('Category name must be at least 2 characters');
+      return;
+    }
+    if (!onCreateCategory) return;
+
+    setCategoryError('');
+    setIsCreatingCategory(true);
+    try {
+      const created = await onCreateCategory(name);
+      setFormData((prev) => ({ ...prev, categoryId: String(created._id) }));
+      setNewCategoryName('');
+      setShowNewCategory(false);
+    } catch (error) {
+      setCategoryError(error.response?.data?.message || 'Could not add category');
+    } finally {
+      setIsCreatingCategory(false);
+    }
   };
 
   return (
@@ -108,7 +163,7 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-            className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100">
@@ -134,7 +189,7 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
               <div className="grid grid-cols-2 gap-2 mb-5">
                 <button
                   type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, type: 'income' }))}
+                  onClick={() => selectType('income')}
                   className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer ${
                     formData.type === 'income'
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
@@ -146,7 +201,7 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, type: 'expense' }))}
+                  onClick={() => selectType('expense')}
                   className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer ${
                     formData.type === 'expense'
                       ? 'border-rose-500 bg-rose-50 text-rose-700'
@@ -156,6 +211,64 @@ const AddTransactionModal = ({ isOpen, onClose, onSubmit, transaction = null }) 
                   <TrendingDown className="w-4 h-4" />
                   Expense
                 </button>
+              </div>
+
+              <div className="mb-5">
+                <div className="flex items-baseline justify-between mb-2">
+                  <label htmlFor="category" className="block text-sm font-medium text-slate-700">
+                    Category
+                  </label>
+                  <span className="text-xs text-slate-400">Optional</span>
+                </div>
+                <select
+                  id="category"
+                  value={showNewCategory ? '__new__' : formData.categoryId}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '__new__') {
+                      setShowNewCategory(true);
+                      setCategoryError('');
+                      setFormData((prev) => ({ ...prev, categoryId: '' }));
+                      return;
+                    }
+                    setShowNewCategory(false);
+                    setNewCategoryName('');
+                    setCategoryError('');
+                    setFormData((prev) => ({ ...prev, categoryId: value }));
+                  }}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  disabled={isSubmitting || isCreatingCategory}
+                >
+                  <option value="">No category</option>
+                  {categories.map((category) => (
+                    <option key={category._id} value={String(category._id)}>
+                      {category.name}
+                    </option>
+                  ))}
+                  <option value="__new__">+ New category</option>
+                </select>
+                {showNewCategory && (
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="e.g. Groceries, Salary"
+                      maxLength={30}
+                      className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      disabled={isCreatingCategory || isSubmitting}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleCreateCategory}
+                      disabled={newCategoryName.trim().length < 2 || isCreatingCategory || isSubmitting}
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-medium disabled:opacity-50 cursor-pointer"
+                    >
+                      {isCreatingCategory ? 'Adding...' : 'Add'}
+                    </button>
+                  </div>
+                )}
+                {categoryError && <p className="mt-2 text-sm text-rose-600">{categoryError}</p>}
               </div>
 
               <label htmlFor="activity" className="block text-sm font-medium text-slate-700 mb-2">
