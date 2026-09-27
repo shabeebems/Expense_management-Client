@@ -7,6 +7,8 @@ import {
   Plus,
   Pencil,
   Search,
+  Trash2,
+  Archive,
   TrendingUp,
   TrendingDown,
   Wallet,
@@ -14,6 +16,8 @@ import {
 } from 'lucide-react';
 import AppShell from '../../Components/AppShell';
 import CreateLedgerModal from '../../Components/CreateLedgerModal';
+import ConfirmDeleteLedgerModal from '../../Components/ConfirmDeleteLedgerModal';
+import DeletedLedgersModal from '../../Components/DeletedLedgersModal';
 import StatCard from '../../Components/StatCard';
 import EmptyState from '../../Components/EmptyState';
 import { formatCurrency, formatDate } from '../../utils/format';
@@ -22,6 +26,11 @@ const Home = () => {
   const [ledgers, setLedgers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingLedger, setEditingLedger] = useState(null);
+  const [deletingLedger, setDeletingLedger] = useState(null);
+  const [deleteMode, setDeleteMode] = useState('schedule');
+  const [deletedLedgers, setDeletedLedgers] = useState([]);
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [isLoadingDeleted, setIsLoadingDeleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
@@ -57,8 +66,24 @@ const Home = () => {
     }
   };
 
+  const fetchDeletedLedgers = async () => {
+    try {
+      setIsLoadingDeleted(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_SERVER_API_URL}/api/ledger/deleted`,
+        { withCredentials: true }
+      );
+      setDeletedLedgers(response.data || []);
+    } catch (err) {
+      console.error('Error fetching deleted ledgers:', err);
+    } finally {
+      setIsLoadingDeleted(false);
+    }
+  };
+
   useEffect(() => {
     fetchLedgers();
+    fetchDeletedLedgers();
   }, []);
 
   const handleSubmit = async (name, ledger) => {
@@ -80,6 +105,48 @@ const Home = () => {
       { withCredentials: true }
     );
     setLedgers((prev) => [response.data, ...prev]);
+  };
+
+  const openDeleteModal = (event, ledger) => {
+    event.stopPropagation();
+    setDeleteMode('schedule');
+    setDeletingLedger(ledger);
+  };
+
+  const openPermanentDelete = (ledger) => {
+    setDeleteMode('permanent');
+    setDeletingLedger(ledger);
+  };
+
+  const handleDeleteLedger = async (ledger) => {
+    if (deleteMode === 'permanent') {
+      await axios.delete(
+        `${import.meta.env.VITE_SERVER_API_URL}/api/ledger/${ledger._id}/permanent`,
+        { withCredentials: true }
+      );
+      setDeletedLedgers((prev) => prev.filter((item) => item._id !== ledger._id));
+      return;
+    }
+
+    await axios.delete(`${import.meta.env.VITE_SERVER_API_URL}/api/ledger/${ledger._id}`, {
+      withCredentials: true,
+    });
+    setLedgers((prev) => prev.filter((item) => item._id !== ledger._id));
+    await fetchDeletedLedgers();
+  };
+
+  const handleRestoreLedger = async (ledger) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_API_URL}/api/ledger/${ledger._id}/restore`,
+        {},
+        { withCredentials: true }
+      );
+      setDeletedLedgers((prev) => prev.filter((item) => item._id !== ledger._id));
+      setLedgers((prev) => [response.data, ...prev.filter((item) => item._id !== ledger._id)]);
+    } catch (error) {
+      console.error('Error restoring ledger:', error);
+    }
   };
 
   const totals = ledgers.reduce(
@@ -109,14 +176,29 @@ const Home = () => {
             Each ledger is a separate book for one part of your finances.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openCreateModal}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          New ledger
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowDeleted(true)}
+            aria-label="Deleted ledgers"
+            className="relative inline-flex items-center justify-center w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            <Archive className="w-4 h-4" />
+            {deletedLedgers.length > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-600 text-[10px] font-semibold text-white flex items-center justify-center">
+                {deletedLedgers.length}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={openCreateModal}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            New ledger
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -234,6 +316,14 @@ const Home = () => {
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
+                        <button
+                          type="button"
+                          onClick={(event) => openDeleteModal(event, ledger)}
+                          aria-label={`Delete ${ledger.name}`}
+                          className="p-2 rounded-lg text-slate-300 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                         <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500" />
                       </div>
                     </div>
@@ -280,6 +370,21 @@ const Home = () => {
         setShowModal={closeModal}
         ledger={editingLedger}
         onSubmit={handleSubmit}
+      />
+      <ConfirmDeleteLedgerModal
+        isOpen={Boolean(deletingLedger)}
+        ledger={deletingLedger}
+        permanent={deleteMode === 'permanent'}
+        onClose={() => setDeletingLedger(null)}
+        onConfirm={handleDeleteLedger}
+      />
+      <DeletedLedgersModal
+        isOpen={showDeleted}
+        ledgers={deletedLedgers}
+        isLoading={isLoadingDeleted}
+        onClose={() => setShowDeleted(false)}
+        onDeleteNow={openPermanentDelete}
+        onRestore={handleRestoreLedger}
       />
     </AppShell>
   );
