@@ -68,12 +68,12 @@ const CallToAction = () => {
           >
             <button
               onClick={() => navigate('/login')}
-              className="group bg-white text-emerald-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-50 transition-all duration-300 hover:scale-105 flex items-center shadow-xl">
+              className="group bg-white text-emerald-600 px-8 py-4 text-lg font-semibold hover:bg-gray-50 transition-all duration-300 hover:scale-105 flex items-center shadow-xl">
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </button>
             
-            <button className="text-white border-2 border-white border-opacity-30 px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:bg-opacity-10 transition-colors">
+            <button className="text-white border-2 border-white border-opacity-30 px-8 py-4 text-lg font-semibold hover:bg-white hover:bg-opacity-10 transition-colors">
               Schedule Demo
             </button>
           </motion.div>

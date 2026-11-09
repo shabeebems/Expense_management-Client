@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, X } from 'lucide-react';
 import { useState } from 'react';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, formatDate } from '../utils/format';
 
 const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, transaction }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -64,6 +64,7 @@ const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, transaction }) => {
 
               <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
                 <p className="font-medium text-slate-800 truncate">{transaction.activity}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{formatDate(transaction.date)}</p>
                 <p
                   className={`mt-1 text-sm font-semibold tabular-nums ${
                     transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600'

@@ -1,9 +1,10 @@
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, LogOut, LayoutGrid, TrendingUp } from 'lucide-react';
+import { Menu, X, LogOut, LayoutGrid } from 'lucide-react';
 import axios from 'axios';
 import InstallAppButton from './InstallAppButton';
+import BrandLogo from './BrandLogo';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -45,15 +46,13 @@ const Navbar = () => {
           : 'bg-white/80 backdrop-blur-md border-b border-transparent'
       }`}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
+      <div className="w-full px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
         <button
           type="button"
           onClick={() => navigate('/home')}
           className="flex items-center gap-2.5 cursor-pointer"
         >
-          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
-            <TrendingUp className="w-5 h-5 text-white" />
-          </div>
+          <BrandLogo className="h-8 sm:h-9 w-auto" />
           <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">
             ProFinance
           </span>
@@ -62,7 +61,7 @@ const Navbar = () => {
         <div className="hidden sm:flex items-center gap-2">
           <Link
             to="/home"
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
               ledgersActive
                 ? 'bg-emerald-50 text-emerald-700'
                 : 'text-slate-600 hover:text-emerald-600 hover:bg-slate-50'
@@ -75,7 +74,7 @@ const Navbar = () => {
           <button
             type="button"
             onClick={logout}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             Logout

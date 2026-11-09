@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Shield, Target, ArrowRight, Play } from 'lucide-react';
+import { Shield, Target, ArrowRight, Play } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import InstallAppButton from '../InstallAppButton';
+import BrandLogo from '../BrandLogo';
 
 const FloatingCard = ({ children, delay = 0, className = "" }) => {
 
@@ -44,9 +45,7 @@ const Hero = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-white" />
-            </div>
+            <BrandLogo className="h-10 w-auto" />
             <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">
               ProFinance
             </span>
@@ -66,7 +65,7 @@ const Hero = () => {
             <InstallAppButton variant="hero" />
             <button 
               onClick={() => navigate('/login')}
-              className="hidden md:inline-flex bg-emerald-600 text-white px-6 py-2 rounded-full hover:bg-emerald-700 transition-colors cursor-pointer">
+              className="hidden md:inline-flex bg-emerald-600 text-white px-6 py-2 hover:bg-emerald-700 transition-colors cursor-pointer">
                 Get Started
             </button>
           </motion.div>
@@ -78,7 +77,7 @@ const Hero = () => {
         <div className="text-center">
           {/* Badge */}
           <motion.div 
-            className="inline-flex items-center px-4 py-2 bg-emerald-100 rounded-full mb-8"
+            className="inline-flex items-center px-4 py-2 bg-emerald-100 mb-8"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.3 }}
@@ -119,7 +118,7 @@ const Hero = () => {
           >
             <button
               onClick={() => navigate('/login')}
-              className="group bg-emerald-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-emerald-700 transition-all duration-300 hover:scale-105 flex items-center cursor-pointer">
+              className="group bg-emerald-600 text-white px-8 py-4 text-lg font-semibold hover:bg-emerald-700 transition-all duration-300 hover:scale-105 flex items-center cursor-pointer">
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </button>

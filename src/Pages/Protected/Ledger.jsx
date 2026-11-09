@@ -3,27 +3,28 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import {
   ArrowLeft,
-  Calendar,
-  Plus,
+  Download,
   Pencil,
+  Plus,
+  Receipt,
   Search,
   SlidersHorizontal,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
-  Receipt,
-  Download,
+  X,
 } from 'lucide-react';
 import AppShell from '../../Components/AppShell';
 import AddTransactionModal from '../../Components/AddTransactionModal';
 import CreateLedgerModal from '../../Components/CreateLedgerModal';
 import ConfirmDeleteModal from '../../Components/ConfirmDeleteModal';
-import StatCard from '../../Components/StatCard';
+import DonutChart from '../../Components/DonutChart';
 import EmptyState from '../../Components/EmptyState';
 import TransactionList from '../../Components/TransactionList';
 import TransactionFilterModal from '../../Components/TransactionFilterModal';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { downloadLedgerPdf } from '../../utils/downloadLedgerPdf';
+
+const PAGE_GRID = 'grid grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)] 2xl:grid-cols-[440px_minmax(0,1fr)] gap-6';
+
+const TYPE_LABELS = { income: 'Income', expense: 'Expenses' };
 
 const Ledger = () => {
   const { ledgerId } = useParams();
@@ -144,9 +145,9 @@ const Ledger = () => {
   const handleDownloadPdf = () => {
     if (!ledger || transactions.length === 0 || isExporting) return;
     setIsExporting(true);
-    window.setTimeout(() => {
+    window.setTimeout(async () => {
       try {
-        downloadLedgerPdf({ ledger, transactions });
+        await downloadLedgerPdf({ ledger, transactions });
       } catch (error) {
         console.error('Error generating PDF:', error);
       } finally {
@@ -183,7 +184,23 @@ const Ledger = () => {
     setSelectedCategories([]);
   };
 
+  const clearAll = () => {
+    clearFilters();
+    setSearchTerm('');
+  };
+
   const activeFilterCount = (activeFilter === 'all' ? 0 : 1) + selectedCategories.length;
+  const isFiltered = activeFilterCount > 0 || searchTerm.trim() !== '';
+
+  const activeFilterLabels = [
+    ...(activeFilter === 'all' ? [] : [TYPE_LABELS[activeFilter]]),
+    ...selectedCategories.map((key) =>
+      key === 'none'
+        ? 'Uncategorized'
+        : categories.find((category) => String(category._id) === key)?.name || 'Category'
+    ),
+    ...(searchTerm.trim() ? [`“${searchTerm.trim()}”`] : []),
+  ];
 
   const totals = useMemo(() => {
     return filteredTransactions.reduce(
@@ -197,27 +214,24 @@ const Ledger = () => {
     );
   }, [filteredTransactions]);
   const net = totals.income - totals.expense;
-  const flow = totals.income + totals.expense;
-  const incomeShare = flow ? (totals.income / flow) * 100 : 0;
 
   if (isLoading) {
     return (
-      <AppShell>
-        <div className="h-8 w-40 rounded-lg bg-slate-200 animate-pulse mb-6" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="h-24 rounded-2xl bg-white border border-slate-100 animate-pulse" />
-          ))}
+      <AppShell fullWidth>
+        <div className="h-5 w-28 bg-slate-200 animate-pulse mb-5" />
+        <div className="h-9 w-64 bg-slate-200 animate-pulse mb-8" />
+        <div className={PAGE_GRID}>
+          <div className="h-[420px] bg-white border border-slate-100 animate-pulse" />
+          <div className="h-[520px] bg-white border border-slate-100 animate-pulse" />
         </div>
-        <div className="h-80 rounded-2xl bg-white border border-slate-100 animate-pulse" />
       </AppShell>
     );
   }
 
   if (!ledger) {
     return (
-      <AppShell>
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm">
+      <AppShell fullWidth>
+        <div className="bg-white border border-slate-100 shadow-sm">
           <EmptyState
             icon={Receipt}
             title="Ledger not found"
@@ -226,7 +240,7 @@ const Ledger = () => {
               <button
                 type="button"
                 onClick={() => navigate('/home')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold cursor-pointer"
               >
                 Back to ledgers
               </button>
@@ -238,148 +252,98 @@ const Ledger = () => {
   }
 
   return (
-    <AppShell withDock>
+    <AppShell withDock fullWidth>
       <button
         type="button"
         onClick={() => navigate('/home')}
-        className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-emerald-700 mb-5 cursor-pointer"
+        className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-emerald-700 mb-4 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
         All ledgers
       </button>
 
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-8">
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6 sm:mb-8">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight truncate">
               {ledger.name}
             </h1>
             <button
               type="button"
               onClick={() => setShowLedgerModal(true)}
-              aria-label="Edit ledger"
-              className="p-2 rounded-lg text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer shrink-0"
+              aria-label="Rename ledger"
+              title="Rename ledger"
+              className="p-2 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer shrink-0"
             >
               <Pencil className="w-4 h-4" />
             </button>
+            <span className="shrink-0 inline-flex items-center gap-1.5 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+              <Receipt className="w-4 h-4" />
+              {transactions.length} {transactions.length === 1 ? 'transaction' : 'transactions'}
+            </span>
           </div>
-          <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-            <Calendar className="w-4 h-4" />
+          <p className="mt-1 text-sm sm:text-base text-slate-500">
             Created {formatDate(ledger.createdAt, { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="relative flex-1 lg:w-72 lg:flex-none">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search transactions..."
+              className="w-full h-11 pl-10 pr-4 border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowFilters(true)}
+            aria-label="Filter transactions"
+            title="Filter transactions"
+            className={`relative shrink-0 inline-flex items-center justify-center w-11 h-11 border transition-colors cursor-pointer ${
+              activeFilterCount > 0
+                ? 'border-slate-900 bg-slate-900 text-white'
+                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 bg-emerald-600 text-[10px] font-semibold text-white flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
           <button
             type="button"
             onClick={handleDownloadPdf}
             disabled={transactions.length === 0 || isExporting}
-            className="hidden sm:inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-full shadow-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Download PDF statement"
+            title="Download PDF statement"
+            className="shrink-0 inline-flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-4 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isExporting ? (
               <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
             ) : (
               <Download className="w-4 h-4" />
             )}
-            {isExporting ? 'Preparing...' : 'Download PDF'}
+            <span className="hidden sm:inline">{isExporting ? 'Preparing...' : 'Download PDF'}</span>
           </button>
           <button
             type="button"
             onClick={openCreateTransaction}
-            className="hidden sm:inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors cursor-pointer"
+            className="hidden sm:inline-flex shrink-0 items-center justify-center gap-2 h-11 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Add transaction
+            Add Transaction
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
-        <StatCard
-          label="Income"
-          value={formatCurrency(totals.income)}
-          icon={TrendingUp}
-          tone="emerald"
-        />
-        <StatCard
-          label="Expenses"
-          value={formatCurrency(totals.expense)}
-          icon={TrendingDown}
-          tone="rose"
-        />
-        <StatCard
-          label="Net balance"
-          value={formatCurrency(net)}
-          icon={Wallet}
-          tone="slate"
-        />
-      </div>
-
-      <div className="bg-white border border-slate-100 rounded-2xl px-4 py-3 mb-6 shadow-sm">
-        <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
-          <span>Income vs expenses</span>
-          <span>{flow ? `${Math.round(incomeShare)}% income` : 'No activity yet'}</span>
-        </div>
-        <div className={`h-2 rounded-full overflow-hidden ${flow ? 'bg-rose-100' : 'bg-slate-100'}`}>
-          <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${incomeShare}%` }} />
-        </div>
-      </div>
-
-      <section className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-5 border-b border-slate-100 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-base sm:text-lg font-semibold text-slate-900">Transactions</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">
-                {filteredTransactions.length} of {transactions.length}
-              </span>
-              <button
-                type="button"
-                onClick={handleDownloadPdf}
-                disabled={transactions.length === 0 || isExporting}
-                aria-label="Download PDF statement"
-                className="sm:hidden inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isExporting ? (
-                  <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by description or category..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowFilters(true)}
-              aria-label="Filter transactions"
-              className={`relative shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-xl border transition-colors cursor-pointer ${
-                activeFilterCount > 0
-                  ? 'border-slate-900 bg-slate-900 text-white'
-                  : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-emerald-600 text-[10px] font-semibold text-white flex items-center justify-center">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div className="p-4 sm:p-5">
+      <div className={`${PAGE_GRID} items-start`}>
+        <section className="bg-white border border-slate-100 shadow-sm">
           {transactions.length === 0 ? (
             <EmptyState
               icon={Receipt}
@@ -389,10 +353,10 @@ const Ledger = () => {
                 <button
                   type="button"
                   onClick={openCreateTransaction}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  Add transaction
+                  Add Transaction
                 </button>
               }
             />
@@ -401,6 +365,15 @@ const Ledger = () => {
               icon={Search}
               title="No matching transactions"
               description="Try another search term or filter."
+              action={
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold cursor-pointer"
+                >
+                  Clear search and filters
+                </button>
+              }
             />
           ) : (
             <TransactionList
@@ -409,17 +382,77 @@ const Ledger = () => {
               onDelete={setDeletingTransaction}
             />
           )}
-        </div>
-      </section>
+        </section>
+
+        <aside className="lg:order-first bg-white border border-slate-100 shadow-sm p-5 sm:p-6">
+          <h2 className="text-lg font-semibold text-slate-900">Overview</h2>
+          <p className="text-sm text-slate-500">
+            {isFiltered
+              ? `Showing ${filteredTransactions.length} of ${transactions.length} transactions`
+              : 'Summary of this ledger'}
+          </p>
+
+          {isFiltered && (
+            <div className="mt-4 flex items-start justify-between gap-3 border border-slate-100 bg-slate-50 px-3.5 py-3">
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-slate-500">Filtered by</p>
+                <p className="mt-0.5 text-sm text-slate-800 break-words">{activeFilterLabels.join(', ')}</p>
+              </div>
+              <button
+                type="button"
+                onClick={clearAll}
+                className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </button>
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-col items-center gap-6">
+            <DonutChart income={totals.income} expense={totals.expense}>
+              <p
+                className={`text-lg font-bold tabular-nums leading-tight ${
+                  net < 0 ? 'text-rose-600' : 'text-slate-900'
+                }`}
+              >
+                {formatCurrency(net)}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">Net balance</p>
+            </DonutChart>
+
+            <dl className="w-full grid grid-cols-2 gap-3">
+              <div className="flex items-start gap-2.5 bg-emerald-50/60 px-3.5 py-3">
+                <span className="mt-1.5 w-2.5 h-2.5 bg-emerald-500 shrink-0" />
+                <div className="min-w-0">
+                  <dt className="text-xs text-slate-500">Total Income</dt>
+                  <dd className="font-semibold text-slate-900 tabular-nums truncate">
+                    {formatCurrency(totals.income)}
+                  </dd>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 bg-rose-50/60 px-3.5 py-3">
+                <span className="mt-1.5 w-2.5 h-2.5 bg-rose-500 shrink-0" />
+                <div className="min-w-0">
+                  <dt className="text-xs text-slate-500">Total Expenses</dt>
+                  <dd className="font-semibold text-slate-900 tabular-nums truncate">
+                    {formatCurrency(totals.expense)}
+                  </dd>
+                </div>
+              </div>
+            </dl>
+          </div>
+        </aside>
+      </div>
 
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 p-4 bg-white/95 backdrop-blur-md border-t border-slate-100">
         <button
           type="button"
           onClick={openCreateTransaction}
-          className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full shadow-sm cursor-pointer"
+          className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          Add transaction
+          Add Transaction
         </button>
       </div>
 

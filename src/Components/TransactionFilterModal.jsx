@@ -96,7 +96,7 @@ const TransactionFilterModal = ({
                   <button
                     type="button"
                     onClick={onClearCategories}
-                    className={`px-3 py-2 rounded-full text-sm font-medium border transition-colors cursor-pointer ${
+                    className={`px-3 py-2 text-sm font-medium border transition-colors cursor-pointer ${
                       selectedCategories.length === 0
                         ? 'border-slate-900 bg-slate-900 text-white'
                         : 'border-slate-200 text-slate-600 hover:border-slate-300'
@@ -111,7 +111,7 @@ const TransactionFilterModal = ({
                         key={option.key}
                         type="button"
                         onClick={() => onToggleCategory(option.key)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium border transition-colors cursor-pointer ${
+                        className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border transition-colors cursor-pointer ${
                           selected
                             ? 'border-slate-900 bg-slate-900 text-white'
                             : 'border-slate-200 text-slate-600 hover:border-slate-300'

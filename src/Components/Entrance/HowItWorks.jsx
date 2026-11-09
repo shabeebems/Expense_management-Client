@@ -113,7 +113,7 @@ const HowItWorks = () => {
         >
           <button
             onClick={() => navigate('/login')}
-            className="bg-emerald-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-emerald-700 transition-colors hover:scale-105 transform duration-200 cursor-pointer">
+            className="bg-emerald-600 text-white px-8 py-4 text-lg font-semibold hover:bg-emerald-700 transition-colors hover:scale-105 transform duration-200 cursor-pointer">
               Start Your Free Trial
           </button>
         </motion.div>

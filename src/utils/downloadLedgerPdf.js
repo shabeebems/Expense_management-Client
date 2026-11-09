@@ -42,14 +42,55 @@ const setColor = (doc, rgb) => doc.setTextColor(...rgb);
 const setFill = (doc, rgb) => doc.setFillColor(...rgb);
 const setStroke = (doc, rgb) => doc.setDrawColor(...rgb);
 
-const drawRounded = (doc, x, y, w, h, color) => {
+const drawBox = (doc, x, y, w, h, color) => {
   setFill(doc, color);
-  doc.roundedRect(x, y, w, h, 1.5, 1.5, 'F');
+  doc.rect(x, y, w, h, 'F');
 };
 
-export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
+// About 300 dpi at the largest size the logo is drawn in the header.
+const LOGO_MAX_WIDTH_PX = 260;
+
+let logoPromise = null;
+
+const loadLogo = () => {
+  if (!logoPromise) {
+    logoPromise = new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => {
+        const ratio = image.naturalWidth / image.naturalHeight;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.min(image.naturalWidth, LOGO_MAX_WIDTH_PX);
+        canvas.height = Math.round(canvas.width / ratio);
+        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve({ dataUrl: canvas.toDataURL('image/png'), ratio });
+      };
+      image.onerror = () => {
+        logoPromise = null;
+        resolve(null);
+      };
+      image.src = '/logo-mark.png';
+    });
+  }
+  return logoPromise;
+};
+
+const drawLogoTile = (doc, logo, x, y, height) => {
+  if (!logo) return x;
+  const inset = height * 0.16;
+  const logoHeight = height - inset * 2;
+  const logoWidth = logoHeight * logo.ratio;
+  const tileWidth = logoWidth + inset * 2;
+  setFill(doc, COLORS.white);
+  doc.rect(x, y, tileWidth, height, 'F');
+  doc.addImage(logo.dataUrl, 'PNG', x + inset, y + inset, logoWidth, logoHeight, 'brand-logo', 'FAST');
+  return x + tileWidth + height * 0.25;
+};
+
+export const downloadLedgerPdf = async ({ ledger, transactions = [] }) => {
+  const logo = await loadLogo();
+
   const byDateAsc = [...transactions].sort(
-    (a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt)
+    (a, b) => new Date(a.date) - new Date(b.date)
   );
 
   const incomeTotal = byDateAsc
@@ -60,11 +101,8 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
     .reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const net = incomeTotal - expenseTotal;
   const generatedAt = new Date();
-  const periodStart = byDateAsc[0]?.date || byDateAsc[0]?.createdAt || generatedAt;
-  const periodEnd =
-    byDateAsc[byDateAsc.length - 1]?.date ||
-    byDateAsc[byDateAsc.length - 1]?.createdAt ||
-    generatedAt;
+  const periodStart = byDateAsc[0]?.date || generatedAt;
+  const periodEnd = byDateAsc[byDateAsc.length - 1]?.date || generatedAt;
   const documentNo = `PF-${String(ledger._id || 'LEDGER').slice(-8).toUpperCase()}-${generatedAt
     .toISOString()
     .slice(0, 10)
@@ -78,14 +116,15 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
   setFill(doc, COLORS.brandMid);
   doc.rect(0, 32, PAGE.width, 1.6, 'F');
 
+  const brandX = drawLogoTile(doc, logo, MARGIN.left, 7, 18);
   setColor(doc, COLORS.white);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.text('ProFinance', MARGIN.left, 13);
+  doc.text('ProFinance', brandX, 15);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(167, 243, 208);
-  doc.text('Personal finance ledger statement', MARGIN.left, 19);
+  doc.text('Personal finance ledger statement', brandX, 21);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
@@ -147,9 +186,9 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
   const cardW = (contentWidth - gap * 3) / 4;
   cards.forEach((card, index) => {
     const x = MARGIN.left + index * (cardW + gap);
-    drawRounded(doc, x, y, cardW, 16, COLORS.surface);
+    drawBox(doc, x, y, cardW, 16, COLORS.surface);
     setStroke(doc, COLORS.line);
-    doc.roundedRect(x, y, cardW, 16, 1.5, 1.5, 'S');
+    doc.rect(x, y, cardW, 16, 'S');
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
     setColor(doc, COLORS.faint);
@@ -184,7 +223,7 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
 
   const tableBody = newestFirst.map((row, index) => [
     String(index + 1).padStart(2, '0'),
-    formatLongDate(row.transaction.date || row.transaction.createdAt),
+    formatLongDate(row.transaction.date),
     row.transaction.activity || '—',
     row.transaction.category?.name || '—',
     row.transaction.type === 'income' ? 'Income' : 'Expense',
@@ -245,10 +284,11 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
       if (data.pageNumber === 1) return;
       setFill(doc, COLORS.brand);
       doc.rect(0, 0, PAGE.width, 12, 'F');
+      const continuedX = drawLogoTile(doc, logo, MARGIN.left, 2, 8);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
       setColor(doc, COLORS.white);
-      doc.text('ProFinance', MARGIN.left, 7.5);
+      doc.text('ProFinance', continuedX, 7.5);
       doc.setFont('helvetica', 'normal');
       doc.text(
         `${ledger.name || 'Ledger'}  ·  Statement (continued)`,
@@ -267,9 +307,9 @@ export const downloadLedgerPdf = ({ ledger, transactions = [] }) => {
 
   const summaryW = 88;
   const summaryX = PAGE.width - MARGIN.right - summaryW;
-  drawRounded(doc, summaryX, closeY, summaryW, 32, COLORS.brandSoft);
+  drawBox(doc, summaryX, closeY, summaryW, 32, COLORS.brandSoft);
   setStroke(doc, [167, 243, 208]);
-  doc.roundedRect(summaryX, closeY, summaryW, 32, 1.5, 1.5, 'S');
+  doc.rect(summaryX, closeY, summaryW, 32, 'S');
 
   const summaryRows = [
     ['Income', formatInr(incomeTotal), COLORS.income],

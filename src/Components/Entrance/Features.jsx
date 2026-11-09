@@ -98,7 +98,7 @@ const Features = () => {
           className="text-center mb-16"
         >
           <motion.div
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full text-blue-800 text-sm font-medium mb-6"
+            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 text-sm font-medium mb-6"
             whileHover={{ scale: 1.05 }}
           >
             <motion.div
@@ -163,7 +163,7 @@ const Features = () => {
               
               {/* Hover Effect Line */}
               <motion.div
-                className={`h-1 ${colorClasses[feature.color].bg} rounded-full mt-4 w-0 group-hover:w-full transition-all duration-300`}
+                className={`h-1 ${colorClasses[feature.color].bg} mt-4 w-0 group-hover:w-full transition-all duration-300`}
               />
             </motion.div>
           ))}

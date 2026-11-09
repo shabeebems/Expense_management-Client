@@ -35,38 +35,3 @@ export const toDateInput = (value) => {
   const day = String(parsed.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
-
-const toLocalDate = (value) => {
-  const input = toDateInput(value);
-  const [year, month, day] = input.split('-').map(Number);
-  return new Date(year, month - 1, day);
-};
-
-export const getDateLabel = (date) => {
-  const value = toLocalDate(date);
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-
-  if (value.toDateString() === today.toDateString()) return 'Today';
-  if (value.toDateString() === yesterday.toDateString()) return 'Yesterday';
-  return formatDate(value, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-};
-
-export const groupByDate = (transactions = []) => {
-  const groups = transactions.reduce((acc, transaction) => {
-    const key = toDateInput(transaction.date || transaction.createdAt);
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(transaction);
-    return acc;
-  }, {});
-
-  return Object.keys(groups)
-    .sort((a, b) => (a < b ? 1 : -1))
-    .map((key) => ({
-      key,
-      label: getDateLabel(key),
-      items: groups[key],
-    }));
-};
-

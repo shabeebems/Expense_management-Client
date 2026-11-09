@@ -4,9 +4,9 @@ import { usePwaInstall } from '../utils/pwa';
 
 const variantClasses = {
   navbar:
-    'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer',
+    'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer',
   menu: 'w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer',
-  hero: 'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-white/80 transition-colors cursor-pointer',
+  hero: 'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-white/80 transition-colors cursor-pointer',
 };
 
 const InstallAppButton = ({ variant = 'navbar' }) => {

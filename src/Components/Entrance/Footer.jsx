@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import BrandLogo from '../BrandLogo';
 import { 
-  TrendingUp, 
   Twitter, 
   Facebook, 
   Instagram, 
@@ -59,8 +59,8 @@ const Footer = () => {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center space-x-2 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
+              <div className="h-10 px-2 bg-white rounded-xl flex items-center justify-center">
+                <BrandLogo className="h-7 w-auto" />
               </div>
               <span className="text-2xl font-bold">ProFinance</span>
             </div>
